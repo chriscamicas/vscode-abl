@@ -1,0 +1,26 @@
+{
+    "name": "vscode-oeabl",
+    "displayName": "OpenEdge ABL",
+    "description": "OpenEdge ABL language support for VS Code.",
+    "version": "0.0.1",
+    "publisher": "zaphyr",
+    "engines": {
+        "vscode": "^1.5.0"
+    },
+    "categories": [
+        "Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "abl",
+            "aliases": ["OpenEdge ABL", "abl", "Progress", "Progress 4GL"],
+            "extensions": [".w",".p",".i"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "abl",
+            "scopeName": "source.abl",
+            "path": "./syntaxes/abl.tmLanguage"
+        }]
+    }
+}

@@ -3,7 +3,8 @@
     "displayName": "OpenEdge ABL",
     "description": "OpenEdge ABL language support for VS Code.",
     "repository": {
-        "url": "https://github.com/ZaphyrVonGenevese/vscode-abl"
+        "type": "git",
+        "url": "https://github.com/ZaphyrVonGenevese/vscode-abl.git"
     },
     "version": "0.0.1",
     "publisher": "zvg",

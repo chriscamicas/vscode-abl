@@ -6,7 +6,7 @@
         "type": "git",
         "url": "https://github.com/ZaphyrVonGenevese/vscode-abl.git"
     },
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "zvg",
     "engines": {
         "vscode": "^1.5.0"
@@ -15,16 +15,29 @@
         "Languages"
     ],
     "contributes": {
-        "languages": [{
-            "id": "abl",
-            "aliases": ["OpenEdge ABL", "abl", "Progress", "Progress 4GL"],
-            "extensions": [".w",".p",".i"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "abl",
-            "scopeName": "source.abl",
-            "path": "./syntaxes/abl.tmLanguage"
-        }]
+        "languages": [
+            {
+                "id": "abl",
+                "aliases": [
+                    "OpenEdge ABL",
+                    "abl",
+                    "Progress",
+                    "Progress 4GL"
+                ],
+                "extensions": [
+                    ".w",
+                    ".p",
+                    ".i"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "abl",
+                "scopeName": "source.abl",
+                "path": "./syntaxes/abl.tmLanguage"
+            }
+        ]
     }
 }

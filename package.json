@@ -2,8 +2,11 @@
     "name": "vscode-oeabl",
     "displayName": "OpenEdge ABL",
     "description": "OpenEdge ABL language support for VS Code.",
+    "repository": {
+        "url": "https://github.com/ZaphyrVonGenevese/vscode-abl"
+    },
     "version": "0.0.1",
-    "publisher": "zaphyr",
+    "publisher": "zvg",
     "engines": {
         "vscode": "^1.5.0"
     },

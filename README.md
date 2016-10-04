@@ -8,9 +8,6 @@ For issues and other things regarding syntax definition, see
  - https://github.com/ZaphyrVonGenevese/openedge-abl-syntax
 
 ## Things that do NOT work
-- Abbreviations are not fully supported
-    - only the shortest and longest form of the keyword is now supported
-    - e.g. `char` and `character` work, but `charac` does not
 - Grammar scopes are not supported right now, but will be; see [Priorities](#priorities)
 
 ## Priorities

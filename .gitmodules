@@ -1,3 +1,3 @@
 [submodule "syntaxes"]
 	path = syntaxes
-	url = https://github.com/ZaphyrVonGenevese/openedge-abl-syntax.git
+	url = git@github.com:ZaphyrVonGenevese/openedge-abl-syntax.git

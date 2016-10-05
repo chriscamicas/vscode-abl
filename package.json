@@ -1,16 +1,21 @@
 {
     "name": "vscode-oeabl",
-    "displayName": "OpenEdge ABL",
+    "publisher": "zvg",
+    "version": "0.1.1",
     "description": "OpenEdge ABL language support for VS Code.",
+    "displayName": "OpenEdge ABL",
+    "author": "ZaphyrVonGenevese",
+    "license": "LICENSE",
     "repository": {
         "type": "git",
         "url": "https://github.com/ZaphyrVonGenevese/vscode-abl.git"
     },
-    "version": "0.1.1",
-    "publisher": "zvg",
+    "bugs": {
+        "url": "https://github.com/ZaphyrVonGenevese/openedge-abl-syntax/issues"
+    },
     "icon": "images/progress_icon.png",
     "engines": {
-        "vscode": "^1.5.0"
+        "vscode": "^1.3.0"
     },
     "categories": [
         "Languages"

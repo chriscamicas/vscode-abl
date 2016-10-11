@@ -35,7 +35,9 @@ That being said, I am super enthusiasthic helping the OpenEdge community. Any su
 - Fix: < and > are special characters; keywords set to match whole word only
 - Added more information about package
 - Icon added
+
 ### v0.1.1
 - Updated readme to help users reach me
+
 ### v0.1.0
 - Initial relase

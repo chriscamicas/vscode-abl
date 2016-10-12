@@ -25,6 +25,9 @@ That being said, I am super enthusiasthic helping the OpenEdge community. Any su
 
 ## Release notes
 
+### v0.2.1
+- reverted: `=*/` is not end of a comment, it is parameter
+
 ### v0.2.0
 - Added partial support for escape characters
 - `=*/` is not end of a comment, it is parameter

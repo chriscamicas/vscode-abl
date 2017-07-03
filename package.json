@@ -33,7 +33,8 @@
                 "extensions": [
                     ".w",
                     ".p",
-                    ".i"
+                    ".i",
+                    ".cls"
                 ],
                 "configuration": "./language-configuration.json"
             }

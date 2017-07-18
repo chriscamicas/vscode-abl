@@ -7,7 +7,55 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceRoot}" ]
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}"
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/out/**/*.js"
+            ],
+            "preLaunchTask": "npm"
+        },
+    	{
+            "name": "Launch as server",
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "program": "${workspaceRoot}/out/debugAdapter/ablDebug.js",
+            "args": [
+                "--server=4712"
+            ],
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/out/**/*.js"
+            ]
+        },
+        {
+            "name": "Launch Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            // the workspace path should be GOPATH
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}",
+                "--extensionTestsPath=${workspaceRoot}/out/test"
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/out/**/*.js"
+            ],
+            "preLaunchTask": "npm"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Extension + Debug server",
+            "configurations": [
+                "Launch Extension",
+                "Launch as server"
+            ]
         }
     ]
 }

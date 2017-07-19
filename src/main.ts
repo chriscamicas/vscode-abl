@@ -63,15 +63,13 @@ function runBuilds(document: vscode.TextDocument, ablConfig: vscode.WorkspaceCon
 			let startColumn = 0;
 			let endColumn = 1;
 			if (document && document.uri.toString() === canonicalFile) {
-				let range = new vscode.Range(error.line - 1, error.column, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
+				let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
 				let text = document.getText(range);
 				let [_, leading, trailing] = /^(\s*).*(\s*)$/.exec(text);
-				startColumn = leading.length;
+				startColumn = startColumn + leading.length;
 				endColumn = text.length - trailing.length;
 			}
 			let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
-			// TODO voir si on gère le error.column
-			// let range = new vscode.Range(error.line - 1, error.column, error.line - 1, error.column);
 			let severity = mapSeverityToVSCodeSeverity(error.severity);
 			let diagnostic = new vscode.Diagnostic(range, error.msg, severity);
 			let diagnostics = diagnosticMap.get(canonicalFile);

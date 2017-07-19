@@ -56,5 +56,15 @@
             "$0"
         ]
 
+    },
+    "PROCEDURE": {
+        "prefix": "pro",
+        "description": "Define a procedure",
+        "body": [
+            "procedure ${1:procName}:",
+            "\t$0",
+            "end procedure."
+        ]
+
     }
 }

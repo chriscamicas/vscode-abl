@@ -1,157 +1,156 @@
 {
-	"name": "openedge-abl",
-	"publisher": "chriscamicas",
-	"version": "0.1.0",
-	"description": "OpenEdge ABL language support for VS Code.",
-	"displayName": "OpenEdge ABL",
-	"author": "chriscamicas",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/chriscamicas/vscode-abl.git"
-	},
-	"bugs": {
-		"url": "https://github.com/chriscamicas/openedge-abl-syntax/issues"
-	},
-	"scripts": {
-		"build": "vsce package",
-		"vscode:prepublish": "tsc -p ./",
-		"compile": "tsc -watch -p ./",
-		"postinstall": "node ./node_modules/vscode/bin/install",
-		"test": "node ./node_modules/vscode/bin/test"
-	},
-	"icon": "images/progress_icon.png",
-	"engines": {
-		"vscode": "^1.14.0"
-	},
-	"categories": [
-		"Languages",
-		"Snippets",
-		"Formatters"
-	],
-	"activationEvents": [
-		"onLanguage:abl"
-	],
-	"main": "./out/main",
-	"contributes": {
-		"languages": [
-			{
-				"id": "abl",
-				"aliases": [
-					"OpenEdge ABL",
-					"abl",
-					"Progress",
-					"Progress 4GL"
-				],
-				"extensions": [
-					".w",
-					".p",
-					".i",
-					".cls"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		],
-		"grammars": [
-			{
-				"language": "abl",
-				"scopeName": "source.abl",
-				"path": "./node_modules/openedge-abl-syntax/abl.tmLanguage.json"
-			}
-		],
-		"snippets": [
-			{
-				"language": "abl",
-				"path": "./snippets/abl.json"
-			}
-		],
-		"commands": [
-			{
-				"command": "abl.run.currentFile",
-				"title": "ABL: Run",
-				"description": "Run the current .p file"
-			},
-			{
-				"command": "abl.checkSyntax",
-				"title": "ABL: CheckSyntax",
-				"description": "Check the syntax for the current .p file"
-			},
-			{
-				"command": "abl.propath",
-				"title": "ABL: Current PROPATH",
-				"description": "See the currently set PROPATH."
-			},
-			{
-				"command": "abl.dataDictionary",
-				"title": "ABL: Open DataDictionary",
-				"description": "Open the DataDictionary external tool"
-			}
-
-		],
-		"configuration": {
-			"type": "object",
-			"title": "ABL configuration",
-			"properties": {
-				"abl.checkSyntaxOnSave": {
-					"type": "string",
-					"enum": [
-						"file",
-						"workspace",
-						"off"
-					],
-					"default": "file",
-					"description": "On save, check the syntax fot eh current file, the workspace, or nothing at all."
-				},
-				"abl.editorContextMenuCommands": {
-					"type": "object",
-					"properties": {
-						"checkSyntax": {
-							"type": "boolean",
-							"default": true,
-							"description": "If true, adds command to check syntax to the editor context menu"
-						}
-					}
-				},
-				"abl.useProcedureEditorKeyBindings": {
-					"type": "boolean",
-					"default": true,
-					"description": "If true, use the same shortcuts as the Progress Procedure Editor (F2, Shift+F2, ...)"
-				}
-			}
-		},
-		"menus": {
-			"editor/context": [
-				{
-					"when": "editorTextFocus && config.abl.editorContextMenuCommands.checkSyntax && resourceLangId == abl",
-					"command": "abl.checkSyntax",
-					"group": "ABL group 1"
-				}
-			]
-		},
-		"keybindings": [
-			{
-				"when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",
-				"command": "abl.checkSyntax",
-				"key": "Shift+F2"
-			},
-			{
-				"when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",
-				"command": "abl.run.currentFile",
-				"key": "F2"
-			}
-		]
-	},
-	"dependencies": {
-		"openedge-abl-syntax": "git+https://github.com/chriscamicas/openedge-abl-syntax.git",
-		"jsonminify": "^0.4.1",
-		"util.promisify": "^1.0.0"
-	},
-	"devDependencies": {
-		"@types/node": "^6.0.50",
-		"vsce": "^1.29.0",
-		"fs-extra": "^4.0.0",
-		"tslint": "^5.5.0",
-		"typescript": "^2.4.1",
-		"vscode": "^1.1.4"
-	}
+    "name": "openedge-abl",
+    "publisher": "chriscamicas",
+    "version": "0.2.0",
+    "description": "OpenEdge ABL language support for VS Code.",
+    "displayName": "OpenEdge ABL",
+    "author": "chriscamicas",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chriscamicas/vscode-abl.git"
+    },
+    "bugs": {
+        "url": "https://github.com/chriscamicas/openedge-abl-syntax/issues"
+    },
+    "scripts": {
+        "build": "vsce package",
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "icon": "images/progress_icon.png",
+    "engines": {
+        "vscode": "^1.14.0"
+    },
+    "categories": [
+        "Languages",
+        "Snippets",
+        "Formatters"
+    ],
+    "activationEvents": [
+        "onLanguage:abl"
+    ],
+    "main": "./out/main",
+    "contributes": {
+        "languages": [
+            {
+                "id": "abl",
+                "aliases": [
+                    "OpenEdge ABL",
+                    "abl",
+                    "Progress",
+                    "Progress 4GL"
+                ],
+                "extensions": [
+                    ".w",
+                    ".p",
+                    ".i",
+                    ".cls"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "abl",
+                "scopeName": "source.abl",
+                "path": "./node_modules/openedge-abl-syntax/abl.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "abl",
+                "path": "./snippets/abl.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "abl.run.currentFile",
+                "title": "ABL: Run",
+                "description": "Run the current .p file"
+            },
+            {
+                "command": "abl.checkSyntax",
+                "title": "ABL: CheckSyntax",
+                "description": "Check the syntax for the current .p file"
+            },
+            {
+                "command": "abl.propath",
+                "title": "ABL: Current PROPATH",
+                "description": "See the currently set PROPATH."
+            },
+            {
+                "command": "abl.dataDictionary",
+                "title": "ABL: Open DataDictionary",
+                "description": "Open the DataDictionary external tool"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "ABL configuration",
+            "properties": {
+                "abl.checkSyntaxOnSave": {
+                    "type": "string",
+                    "enum": [
+                        "file",
+                        "workspace",
+                        "off"
+                    ],
+                    "default": "file",
+                    "description": "On save, check the syntax fot eh current file, the workspace, or nothing at all."
+                },
+                "abl.editorContextMenuCommands": {
+                    "type": "object",
+                    "properties": {
+                        "checkSyntax": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "If true, adds command to check syntax to the editor context menu"
+                        }
+                    }
+                },
+                "abl.useProcedureEditorKeyBindings": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, use the same shortcuts as the Progress Procedure Editor (F2, Shift+F2, ...)"
+                }
+            }
+        },
+        "menus": {
+            "editor/context": [
+                {
+                    "when": "editorTextFocus && config.abl.editorContextMenuCommands.checkSyntax && resourceLangId == abl",
+                    "command": "abl.checkSyntax",
+                    "group": "ABL group 1"
+                }
+            ]
+        },
+        "keybindings": [
+            {
+                "when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",
+                "command": "abl.checkSyntax",
+                "key": "Shift+F2"
+            },
+            {
+                "when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",
+                "command": "abl.run.currentFile",
+                "key": "F2"
+            }
+        ]
+    },
+    "dependencies": {
+        "openedge-abl-syntax": "git+https://github.com/chriscamicas/openedge-abl-syntax.git",
+        "jsonminify": "^0.4.1",
+        "util.promisify": "^1.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^6.0.50",
+        "vsce": "^1.29.0",
+        "fs-extra": "^4.0.0",
+        "tslint": "^5.5.0",
+        "typescript": "^2.4.1",
+        "vscode": "^1.1.4"
+    }
 }

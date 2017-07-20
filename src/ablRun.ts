@@ -9,8 +9,9 @@ export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration):
 	let cwd = path.dirname(filename);
 
 	let cmd = getProBin();
-	let args = prepareProArguments(filename);
-	return create(cmd, args, { env: process.env, cwd: cwd }, outputChannel);
+	return prepareProArguments(filename).then(args => {
+		return create(cmd, args, { env: process.env, cwd: cwd }, outputChannel);
+	});
 }
 
 // function runTool(args: string[], cwd: string, severity: string, useStdErr: boolean, toolName: string, env: any, printUnexpectedOutput?: boolean): Promise<ICheckResult[]> {

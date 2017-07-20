@@ -80,7 +80,13 @@
 				"command": "abl.propath",
 				"title": "ABL: Current PROPATH",
 				"description": "See the currently set PROPATH."
+			},
+			{
+				"command": "abl.dataDictionary",
+				"title": "ABL: Open DataDictionary",
+				"description": "Open the DataDictionary external tool"
 			}
+
 		],
 		"configuration": {
 			"type": "object",
@@ -136,7 +142,9 @@
 		]
 	},
 	"dependencies": {
-		"openedge-abl-syntax": "git+https://github.com/chriscamicas/openedge-abl-syntax.git"
+		"openedge-abl-syntax": "git+https://github.com/chriscamicas/openedge-abl-syntax.git",
+		"jsonminify": "^0.4.1",
+		"util.promisify": "^1.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^6.0.50",

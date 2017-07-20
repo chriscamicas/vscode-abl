@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { checkSyntax, ICheckResult, removeTestStatus } from './ablCheckSyntax';
 import { run } from './ablRun';
+import { openDataDictionary } from './ablDataDictionary';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
 let warningDiagnosticCollection: vscode.DiagnosticCollection;
@@ -23,6 +24,11 @@ export function activate(ctx: vscode.ExtensionContext): void {
 		let ablConfig = vscode.workspace.getConfiguration('abl');
 		runBuilds(vscode.window.activeTextEditor.document, ablConfig);
 	}));
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.dataDictionary', () => {
+		// let ablConfig = vscode.workspace.getConfiguration('abl');
+		openDataDictionary();
+	}));
+
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.run.currentFile', () => {
 		let ablConfig = vscode.workspace.getConfiguration('abl');
 		run(vscode.window.activeTextEditor.document.uri.fsPath, ablConfig);

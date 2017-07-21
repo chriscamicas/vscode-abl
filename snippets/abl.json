@@ -69,7 +69,7 @@
         "prefix": "func",
         "description": "Define a function",
         "body": [
-            "function ${1:functionName} return ${2:returnType} (input ${3:parameterName} as ${4:parameterType}):",
+            "function ${1:functionName} returns ${2:returnType} (input ${3:parameterName} as ${4:parameterType}):",
             "\t$0",
             "\treturn.",
             "end function."

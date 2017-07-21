@@ -55,7 +55,6 @@
             "\tfield ${2:fieldName} as ${3:char}.",
             "$0"
         ]
-
     },
     "PROCEDURE": {
         "prefix": "pro",
@@ -65,6 +64,15 @@
             "\t$0",
             "end procedure."
         ]
-
+    },
+    "FUNCTION": {
+        "prefix": "func",
+        "description": "Define a function",
+        "body": [
+            "function ${1:functionName} returns ${2:char} (input ${3:parameterName} as ${4:char}):",
+            "\t$0",
+            "\treturn.",
+            "end function."
+        ]
     }
 }

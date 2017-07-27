@@ -1,7 +1,7 @@
 {
     "name": "openedge-abl",
     "publisher": "chriscamicas",
-    "version": "0.2.0",
+    "version": "0.4.0",
     "description": "OpenEdge ABL language support for VS Code.",
     "displayName": "OpenEdge ABL",
     "author": "chriscamicas",

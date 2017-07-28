@@ -1,7 +1,7 @@
 {
     "name": "openedge-abl",
     "publisher": "chriscamicas",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "description": "OpenEdge ABL language support for VS Code.",
     "displayName": "OpenEdge ABL",
     "author": "chriscamicas",
@@ -141,7 +141,7 @@
         ]
     },
     "dependencies": {
-        "openedge-abl-syntax": "git+https://github.com/chriscamicas/openedge-abl-syntax.git",
+        "abl-tmlanguage": "git+https://github.com/chriscamicas/abl-tmlanguage.git",
         "jsonminify": "^0.4.1",
         "util.promisify": "^1.0.0"
     },

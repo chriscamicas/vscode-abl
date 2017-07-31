@@ -2,7 +2,7 @@
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## What's new
-* Better syntax highlighting (parameter vs variable). I recommand the Monokai theme.
+* Better syntax highlighting
 
 ## Features
 

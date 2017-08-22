@@ -1,3 +1,9 @@
+0.5
+=====
+
+## What's new
+- `proPath` and `proPathMode` supports in `.openedge.json` config file
+
 0.4.2
 =====
 

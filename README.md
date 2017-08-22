@@ -2,7 +2,7 @@
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## What's new
-* Better syntax highlighting
+* `proPath` and `proPath` supports in `.openedge.json` config file
 
 ## Features
 
@@ -21,8 +21,8 @@ You can create a local config file for your project named `.openedge.json`, with
 ```JSON
 {
     "proPath": [
-        "",
-        ""
+        "c:\\temp",
+        "${workspaceRoot}"
     ],
     "proPathMode": "append", // overwrite, prepend
     "startupProcedure": "startup.p",
@@ -33,6 +33,8 @@ You can create a local config file for your project named `.openedge.json`, with
 }
 ```
 Path for startupProcedure and parameterFiles are relative to your workspace root.
+
+`proPath` is optionnal, and the default value is the workspaceRoot (of VSCode).
 
 # Greetings
 Largely inspired by ZaphyrVonGenevese work (https://github.com/ZaphyrVonGenevese/vscode-abl).

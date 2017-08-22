@@ -28,10 +28,9 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
 	statusBarItem.show();
 	statusBarItem.text = 'Checking syntax';
 
-	let cwd = vscode.workspace.rootPath || path.dirname(filename);
-	// vscode.extensions.getExtension('chriscamicas.openedge-abl').extensionPath
+	let cwd = path.dirname(filename);
+	// let cwd = vscode.workspace.rootPath || path.dirname(filename);
 	let env = process.env;
-	// let cmd = getBinPath('_progres.exe');
 
 	let cmd = getProBin();
 	return prepareProArguments(path.join(__dirname, '../abl-src/check-syntax.p'), filename).then(args => {

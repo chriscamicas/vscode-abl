@@ -43,3 +43,26 @@ export function prepareProArguments(startupProcedure: string, param = '', batchM
         return args;
     });
 }
+
+export function setupEnvironmentVariables(env: any): Promise<any> {
+    return getOpenEdgeConfig().then(openEdgeConfig => {
+        if (openEdgeConfig) {
+            if (!openEdgeConfig.proPath || !(openEdgeConfig.proPath instanceof Array) || openEdgeConfig.proPath.length === 0) {
+                openEdgeConfig.proPath = ['${workspaceRoot}'];
+            }
+            let paths = openEdgeConfig.proPath.map(p => {
+                p = p.replace('${workspaceRoot}', vscode.workspace.rootPath);
+                p = path.posix.normalize(p);
+                return p;
+            });
+            env.VSABL_PROPATH = paths.join(',');
+
+            if (openEdgeConfig.proPathMode) {
+                env.VSABL_PROPATH_MODE = openEdgeConfig.proPathMode;
+            }
+        }
+        env.VSABL_SRC = path.join(__dirname, '../abl-src');
+
+        return env;
+    });
+}

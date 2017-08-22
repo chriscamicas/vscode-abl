@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
 import { outputChannel } from './ablStatus';
-import { getBinPath, getProBin, prepareProArguments } from './ablPath';
+import { getBinPath, getProBin, prepareProArguments, setupEnvironmentVariables } from './ablPath';
 
 let statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 // statusBarItem.command = 'abl.checkSyntax.showOutput';
@@ -30,62 +30,62 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
 
 	let cwd = path.dirname(filename);
 	// let cwd = vscode.workspace.rootPath || path.dirname(filename);
-	let env = process.env;
-
 	let cmd = getProBin();
 	return prepareProArguments(path.join(__dirname, '../abl-src/check-syntax.p'), filename).then(args => {
-		return new Promise<ICheckResult[]>((resolve, reject) => {
-			cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
-				try {
-					if (err && (<any>err).code === 'ENOENT') {
-						// Since the tool is run on save which can be frequent
-						// we avoid sending explicit notification if tool is missing
-						console.log(`Cannot find ${cmd}`);
-						return resolve([]);
-					}
-					let useStdErr = false; // todo voir si utile
-					if (err && stderr && !useStdErr) {
-						outputChannel.appendLine(['Error while running tool:', cmd, ...args].join(' '));
-						outputChannel.appendLine(stderr);
-						return resolve([]);
-					}
-					let lines = stdout.toString().split('\r\n').filter(line => line.length > 0);
-					if (lines.length === 1 && lines[0].startsWith('SUCCESS')) {
-						resolve([]);
-						return;
-					}
-					let results: ICheckResult[] = [];
-
-					// Format = &1 File:'&2' Row:&3 Col:&4 Error:&5 Message:&6
-					let re = /(ERROR|WARNING) File:'(.*)' Row:(\d+) Col:(\d+) Error:(.*) Message:(.*)/;
-					lines.forEach(line => {
-						let matches = line.match(re);
-
-						if (matches) {
-							let checkResult = {
-								file: matches[2],
-								line: parseInt(matches[3]),
-								column: parseInt(matches[4]),
-								msg: `${matches[5]}: ${matches[6]}`,
-								severity: matches[1].toLowerCase()
-							};
-							// console.log(`${JSON.stringify(checkResult)}`);
-							results.push(checkResult);
-						} else {
-							reject(stdout);
+		return setupEnvironmentVariables(process.env).then(env => {
+			return new Promise<ICheckResult[]>((resolve, reject) => {
+				cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
+					try {
+						if (err && (<any>err).code === 'ENOENT') {
+							// Since the tool is run on save which can be frequent
+							// we avoid sending explicit notification if tool is missing
+							console.log(`Cannot find ${cmd}`);
+							return resolve([]);
 						}
-					});
-					resolve(results);
-				} catch (e) {
-					reject(e);
-				}
+						let useStdErr = false; // todo voir si utile
+						if (err && stderr && !useStdErr) {
+							outputChannel.appendLine(['Error while running tool:', cmd, ...args].join(' '));
+							outputChannel.appendLine(stderr);
+							return resolve([]);
+						}
+						let lines = stdout.toString().split('\r\n').filter(line => line.length > 0);
+						if (lines.length === 1 && lines[0].startsWith('SUCCESS')) {
+							resolve([]);
+							return;
+						}
+						let results: ICheckResult[] = [];
+
+						// Format = &1 File:'&2' Row:&3 Col:&4 Error:&5 Message:&6
+						let re = /(ERROR|WARNING) File:'(.*)' Row:(\d+) Col:(\d+) Error:(.*) Message:(.*)/;
+						lines.forEach(line => {
+							let matches = line.match(re);
+
+							if (matches) {
+								let checkResult = {
+									file: matches[2],
+									line: parseInt(matches[3]),
+									column: parseInt(matches[4]),
+									msg: `${matches[5]}: ${matches[6]}`,
+									severity: matches[1].toLowerCase()
+								};
+								// console.log(`${JSON.stringify(checkResult)}`);
+								results.push(checkResult);
+							} else {
+								reject(stdout);
+							}
+						});
+						resolve(results);
+					} catch (e) {
+						reject(e);
+					}
+				});
+			}).then(results => {
+				if (results.length === 0)
+					statusBarItem.text = 'Syntax OK';
+				else
+					statusBarItem.text = 'Syntax error';
+				return results;
 			});
-		}).then(results => {
-			if (results.length === 0)
-				statusBarItem.text = 'Syntax OK';
-			else
-				statusBarItem.text = 'Syntax error';
-			return results;
 		});
 	});
 }

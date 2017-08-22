@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import { outputChannel } from './ablStatus';
-import { getProBin, prepareProArguments } from './ablPath';
+import { getProBin, prepareProArguments, setupEnvironmentVariables } from './ablPath';
 import { create } from './OutputChannelProcess';
 
 export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<any> {
@@ -9,8 +9,10 @@ export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration):
 	let cwd = path.dirname(filename);
 
 	let cmd = getProBin();
-	return prepareProArguments(filename).then(args => {
-		return create(cmd, args, { env: process.env, cwd: cwd }, outputChannel);
+	return prepareProArguments(path.join(__dirname, '../abl-src/run.p'), filename).then(args => {
+		return setupEnvironmentVariables(process.env).then(env => {
+			return create(cmd, args, { env: env, cwd: cwd }, outputChannel);
+		});
 	});
 }
 

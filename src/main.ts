@@ -68,25 +68,30 @@ function runBuilds(document: vscode.TextDocument, ablConfig: vscode.WorkspaceCon
 			let canonicalFile = vscode.Uri.file(error.file).toString();
 			let startColumn = 0;
 			let endColumn = 1;
-			if (document && document.uri.toString() === canonicalFile) {
-				let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
-				let text = document.getText(range);
-				let [_, leading, trailing] = /^(\s*).*(\s*)$/.exec(text);
-				startColumn = startColumn + leading.length;
-				endColumn = text.length - trailing.length;
+			if (error.line === 0) {
+				vscode.window.showErrorMessage(error.msg);
 			}
-			let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
-			let severity = mapSeverityToVSCodeSeverity(error.severity);
-			let diagnostic = new vscode.Diagnostic(range, error.msg, severity);
-			let diagnostics = diagnosticMap.get(canonicalFile);
-			if (!diagnostics) {
-				diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
+			else {
+				if (document && document.uri.toString() === canonicalFile) {
+					let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
+					let text = document.getText(range);
+					let [_, leading, trailing] = /^(\s*).*(\s*)$/.exec(text);
+					startColumn = startColumn + leading.length;
+					endColumn = text.length - trailing.length;
+				}
+				let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
+				let severity = mapSeverityToVSCodeSeverity(error.severity);
+				let diagnostic = new vscode.Diagnostic(range, error.msg, severity);
+				let diagnostics = diagnosticMap.get(canonicalFile);
+				if (!diagnostics) {
+					diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
+				}
+				if (!diagnostics[severity]) {
+					diagnostics[severity] = [];
+				}
+				diagnostics[severity].push(diagnostic);
+				diagnosticMap.set(canonicalFile, diagnostics);
 			}
-			if (!diagnostics[severity]) {
-				diagnostics[severity] = [];
-			}
-			diagnostics[severity].push(diagnostic);
-			diagnosticMap.set(canonicalFile, diagnostics);
 		});
 		diagnosticMap.forEach((diagMap, file) => {
 			errorDiagnosticCollection.set(vscode.Uri.parse(file), diagMap[vscode.DiagnosticSeverity.Error]);

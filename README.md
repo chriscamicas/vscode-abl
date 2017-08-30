@@ -25,14 +25,11 @@ You can create a local config file for your project named `.openedge.json`, with
         "${workspaceRoot}"
     ],
     "proPathMode": "append", // overwrite, prepend
-    "startupProcedure": "startup.p",
-    "startupProcedureParam": "file.ini", // -param
     "parameterFiles": [ // -pf
         "default.pf"
     ]
 }
 ```
-Path for startupProcedure and parameterFiles are relative to your workspace root.
 
 `proPath` is optionnal, and the default value is the workspaceRoot (of VSCode).
 

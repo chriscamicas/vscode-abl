@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import { outputChannel } from './ablStatus';
-import { getProBin, prepareProArguments, setupEnvironmentVariables } from './ablPath';
+import { getOpenEdgeConfig } from './ablConfig';
+import { getProBin, createProArgs, setupEnvironmentVariables } from './shared/ablPath';
 import { create } from './OutputChannelProcess';
 
 export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<any> {
@@ -9,12 +10,36 @@ export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration):
 	let cwd = path.dirname(filename);
 
 	let cmd = getProBin();
-	return prepareProArguments(path.join(__dirname, '../abl-src/run.p'), filename).then(args => {
-		return setupEnvironmentVariables(process.env).then(env => {
-			return create(cmd, args, { env: env, cwd: cwd }, outputChannel);
+	return getOpenEdgeConfig().then(oeConfig => {
+		let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
+		let args = createProArgs({
+			oeConfig: oeConfig,
+			batchMode: true,
+			startupProcedure: path.join(__dirname, '../abl-src/run.p'),
+			param: filename
 		});
+		return create(cmd, args, { env: env, cwd: cwd }, outputChannel);
 	});
 }
+
+// export function runDebug(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<any> {
+// 	outputChannel.clear();
+// 	let cwd = path.dirname(filename);
+
+// 	let cmd = getProBin();
+// 	return prepareProArguments(path.join(__dirname, '../abl-src/run-debug.p'), filename, true, true).then(args => {
+// 		return setupEnvironmentVariables(process.env).then(env => {
+// 			// return create(cmd, args, { env: env, cwd: cwd }, outputChannel);
+
+// 			let spawnOptions = { env: env, cwd: cwd };
+// 			// spawnOptions.stdio = 'pipe';
+// 			const spawnedProcess = spawn(cmd, args, spawnOptions);
+// 			vscode.
+// 		    setTimeout(() => { spawnedProcess.stdin.write('\x0D'); }, 8000);
+
+// 		});
+// 	});
+// }
 
 // function runTool(args: string[], cwd: string, severity: string, useStdErr: boolean, toolName: string, env: any, printUnexpectedOutput?: boolean): Promise<ICheckResult[]> {
 //     let cmd = getBinPath(toolName);

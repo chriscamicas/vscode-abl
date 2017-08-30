@@ -1,0 +1,1 @@
+Files in this directory are loaded by both the extension and debug adapter, so they cannot import 'vscode'

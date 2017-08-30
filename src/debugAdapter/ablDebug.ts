@@ -317,6 +317,7 @@ class AblDebugSession extends DebugSession {
 
     private _variableHandles: Handles<DebugVariable>;
     private breakpoints: Map<string, DebugBreakpoint[]>;
+    private watchpointExpressions: Set<string>;
     private threads: Set<number>;
     private debugState: DebuggerState;
     private ablDebugger: AblDebugger;
@@ -328,6 +329,7 @@ class AblDebugSession extends DebugSession {
         this.debugState = null;
         this.ablDebugger = null;
         this.breakpoints = new Map<string, DebugBreakpoint[]>();
+        this.watchpointExpressions = new Set<string>();
 
         const logPath = path.join(os.tmpdir(), 'vscode-abl-debug.txt');
         logger.init(e => this.sendEvent(e), logPath, isServer);
@@ -337,6 +339,7 @@ class AblDebugSession extends DebugSession {
         verbose('InitializeRequest');
         // This debug adapter implements the configurationDoneRequest.
         response.body.supportsConfigurationDoneRequest = true;
+        response.body.supportsEvaluateForHovers = true;
         // response.body.supportsConditionalBreakpoints = true;
         this.sendResponse(response);
         verbose('InitializeResponse');
@@ -599,8 +602,16 @@ class AblDebugSession extends DebugSession {
             this.ablDebugger.listVariables().then(msgVariables => {
                 this.ablDebugger.listTempTables().then(msgTempTables => {
                     let parameters: DebugVariable[] = msgParameters.args.map(p => {
+                        let displayName = p[1];
+                        if (p[0] === 'OUTPUT') {
+                            displayName = '\u2190' + displayName;
+                        } else if (p[0] === 'INPUT') {
+                            displayName = '\u2192' + displayName;
+                        } else if (p[0] === 'INPUT-OUTPUT') {
+                            displayName = '\u2194' + displayName;
+                        }
                         return {
-                            name: p[1],
+                            name: displayName,
                             type: p[2],
                             kind: AblReflectKind.Parameter,
                             value: p[5],
@@ -613,7 +624,7 @@ class AblDebugSession extends DebugSession {
                             name: p[0],
                             type: p[1],
                             kind: AblReflectKind.Variable,
-                            value: p[4],
+                            value: p[6],
                             children: []
                         };
                     });
@@ -840,25 +851,43 @@ class AblDebugSession extends DebugSession {
         verbose('PauseResponse');
     }
 
-    // protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-    //     verbose('EvaluateRequest');
-    //     let evalSymbolArgs = {
-    //         symbol: args.expression,
-    //         scope: {
-    //             goroutineID: this.debugState.currentGoroutine.id,
-    //             frame: args.frameId
-    //         }
-    //     };
-    //     this.delve.call<DebugVariable>('EvalSymbol', [evalSymbolArgs], (err, variable) => {
-    //         if (err) {
-    //             logError('Failed to eval expression: ', JSON.stringify(evalSymbolArgs, null, ' '));
-    //             return this.sendErrorResponse(response, 2009, 'Unable to eval expression: "{e}"', { e: err.toString() });
-    //         }
-    //         response.body = this.convertDebugVariableToProtocolVariable(variable, 0);
-    //         this.sendResponse(response);
-    //         verbose('EvaluateResponse');
-    //     });
-    // }
+    protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+        verbose('EvaluateRequest');
+        if (args.context === 'watch' || args.context === 'hover') {
+            // keep track of the watchpoint we've already set
+            if (!this.watchpointExpressions.has(args.expression)) {
+                this.ablDebugger.sendMessage(`watch ${args.expression}`);
+                this.watchpointExpressions.add(args.expression);
+            }
+            this.ablDebugger.sendMessageWithResponse('show watch', 'MSG_WATCHPOINTS').then(msg => {
+                // MSG_WATCHPOINTS;.1;String(varIntGlobal);UNKNOWN;0;R;** Unavailable **;.2;varIntGlobal;INTEGER;0;RW;42;.3;varIntGlobal;INTEGER;0;RW;42;.4;varIntGlobal;INTEGER;0;RW;42;.5;varCharGlobal;CHARACTER;0;RW;.7"youpi";.6;varCharGlobal;CHARACTER;0;RW;.7"youpi";.7;varCharGlobal;CHARACTER;0;RW;.7"youpi";.8;varCharGlobal;CHARACTER;0;RW;.7"youpi";..
+                // 0: index
+                // 1: expression
+                // 2: type
+                // 3: 0 ??
+                // 4: R/RW
+                // 5: value
+                let watchpoint = msg.args.find(wp => {
+                    return wp[1] === args.expression;
+                });
+                if (watchpoint) {
+                    let variable: DebugVariable = {
+                        kind: AblReflectKind.Variable,
+                        children: [],
+                        name: watchpoint[1],
+                        type: watchpoint[2],
+                        value: watchpoint[5]
+                    };
+                    response.body = this.convertDebugVariableToProtocolVariable(variable, 0);
+                }
+                this.sendResponse(response);
+                verbose('EvaluateResponse');
+            });
+        } else {
+            this.sendResponse(response);
+            verbose('EvaluateResponse');
+        }
+    }
 }
 
 DebugSession.run(AblDebugSession);

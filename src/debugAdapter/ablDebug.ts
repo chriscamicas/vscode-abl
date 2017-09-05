@@ -421,7 +421,7 @@ class AblDebugSession extends DebugSession {
             });
 
             // prepareProArguments(path.join(__dirname, '../../abl-src/run-debug.p'), filename, true, true).then(proArgs => {
-            let spawnOptions = { env: process.env, cwd: cwd };
+            let spawnOptions = { env: env, cwd: cwd };
             // spawnOptions.stdio = 'pipe';
             const spawnedProcess = spawn(cmd, proArgs, spawnOptions);
             spawnedProcess.stderr.on('data', chunk => {
@@ -433,6 +433,7 @@ class AblDebugSession extends DebugSession {
                 this.sendEvent(new OutputEvent(str, 'stdout'));
             });
             spawnedProcess.on('close', (code) => {
+                this.sendEvent(new TerminatedEvent());
                 logError('Process exiting with code: ' + code);
             });
             spawnedProcess.on('error', function (err) {
@@ -570,14 +571,15 @@ class AblDebugSession extends DebugSession {
         verbose('StackTraceRequest');
         this.ablDebugger.showStack().then(msg => {
             let stackFrames = msg.args.map((location, i) => {
+                let filename = path.basename(location[4]);
                 return new StackFrame(
                     i,
                     location[6],
                     new Source(
-                        location[5],
+                        filename,
                         location[4],
                     ),
-                    parseInt(location[1])
+                    parseInt(location[8])
                 );
             });
             stackFrames.reverse();

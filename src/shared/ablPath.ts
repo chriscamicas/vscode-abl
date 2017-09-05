@@ -67,6 +67,8 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
 
         if (openEdgeConfig.proPathMode) {
             env.VSABL_PROPATH_MODE = openEdgeConfig.proPathMode;
+        } else  {
+            env.VSABL_PROPATH_MODE = 'append';
         }
     }
     env.VSABL_SRC = path.join(__dirname, '../abl-src');

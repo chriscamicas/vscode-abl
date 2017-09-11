@@ -98,7 +98,7 @@
             {
                 "type": "abl",
                 "label": "ABL",
-                "program": "./out/src/debugAdapter/ablDebug.js",
+                "program": "./out/debugAdapter/ablDebug.js",
                 "runtime": "node",
                 "languages": [
                     "abl"

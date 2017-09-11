@@ -27,10 +27,12 @@
     "categories": [
         "Languages",
         "Snippets",
+        "Debuggers",
         "Formatters"
     ],
     "activationEvents": [
-        "onLanguage:abl"
+        "onLanguage:abl",
+        "onCommand:abl.debug.startSession"
     ],
     "main": "./out/main",
     "contributes": {
@@ -87,6 +89,111 @@
                 "description": "Open the DataDictionary external tool"
             }
         ],
+        "breakpoints": [
+            {
+                "language": "abl"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "abl",
+                "label": "ABL",
+                "program": "./out/src/debugAdapter/ablDebug.js",
+                "runtime": "node",
+                "languages": [
+                    "abl"
+                ],
+                "startSessionCommand": "abl.debug.startSession",
+                "configurationSnippets": [
+                    {
+                        "label": "ABL: Attach",
+                        "description": "Attach to a debug-ready process",
+                        "body": {
+                            "name": "${2:Attach to process}",
+                            "type": "abl",
+                            "request": "attach",
+                            "address": "TCP/IP address of process to be debugged",
+                            "port": 3099,
+                            "localRoot": "${workspaceRoot}",
+                            "remoteRoot": "path to remote files"
+                        }
+                    },
+                    {
+                        "label": "ABL: Launch Program",
+                        "description": "Debug the current file",
+                        "body": {
+                            "name": "${2:Launch program}",
+                            "type": "abl",
+                            "request": "launch",
+                            "program": "^\"${1:\\${file}}\"",
+                            "port": 3099,
+                            "cwd": "${workspaceRoot}"
+                        }
+                    }
+                ],
+                "initialConfigurations": [
+                    {
+                        "name": "Attach",
+                        "type": "abl",
+                        "request": "attach",
+                        "port": 3099,
+                        "address": "127.0.0.1"
+                    }
+                ],
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [],
+                        "properties": {
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop program after launch.",
+                                "default": true
+                            },
+                            "port": {
+                                "type": "number",
+                                "description": "The port that the debugger will be listening on.",
+                                "default": 3099
+                            },
+                            "program": {
+                                "type": "string",
+                                "description": "The program to start.",
+                                "default": "startup.p"
+                            },
+                            "cwd": {
+                                "type": "string",
+                                "description": "The working directory.",
+                                "default": "${workspaceRoot}"
+                            }
+                        }
+                    },
+                    "attach": {
+                        "required": [],
+                        "properties": {
+                            "port": {
+                                "type": "number",
+                                "description": "The port that the debugger will be listening on.",
+                                "default": 3099
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The remote address the debugger will connect to.",
+                                "default": "127.0.0.1"
+                            },
+                            "localRoot": {
+                                "type": "string",
+                                "description": "The root directory for local source",
+                                "default": "${workspaceRoot}"
+                            },
+                            "remoteRoot": {
+                                "type": "string",
+                                "description": "The root directory for remote source",
+                                "default": ""
+                            }
+                        }
+                    }
+                }
+            }
+        ],
         "configuration": {
             "type": "object",
             "title": "ABL configuration",
@@ -127,6 +234,10 @@
                 }
             ]
         },
+        "jsonValidation": [{
+            "fileMatch": ".openedge.json",
+            "url": "./schemas/openedge.schema.json"
+        }],
         "keybindings": [
             {
                 "when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",
@@ -143,7 +254,10 @@
     "dependencies": {
         "abl-tmlanguage": "git+https://github.com/chriscamicas/abl-tmlanguage.git",
         "jsonminify": "^0.4.1",
-        "util.promisify": "^1.0.0"
+        "util.promisify": "^1.0.0",
+        "vscode-debug-logger": "^0.0.4",
+        "vscode-debugadapter": "^1.11.0",
+        "vscode-debugprotocol": "^1.11.0"
     },
     "devDependencies": {
         "@types/node": "^6.0.50",

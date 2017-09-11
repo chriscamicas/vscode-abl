@@ -34,10 +34,28 @@ export function activate(ctx: vscode.ExtensionContext): void {
 		run(vscode.window.activeTextEditor.document.uri.fsPath, ablConfig);
 	}));
 
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.debug.startSession', config => {
+		if (!config.request) { // if 'request' is missing interpret this as a missing launch.json
+			let activeEditor = vscode.window.activeTextEditor;
+			if (!activeEditor || activeEditor.document.languageId !== 'abl') {
+				return;
+			}
+
+			config = Object.assign(config, {
+				'name': 'Attach',
+				'type': 'abl',
+				'request': 'attach'
+			});
+		}
+		vscode.commands.executeCommand('vscode.startDebug', config);
+	}));
+
 	errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-error');
 	ctx.subscriptions.push(errorDiagnosticCollection);
 	warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-warning');
 	ctx.subscriptions.push(warningDiagnosticCollection);
+
+
 }
 
 function deactivate() {

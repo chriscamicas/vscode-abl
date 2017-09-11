@@ -66,6 +66,9 @@ The debugger supports basic features
 - display variables
 - watch/evaluate basic expressions
 
+You can also map remote path to local path (1 to 1) using `localRoot` and `remoteRoot`. It's useful when debugging a remote target, even more if it only executes r-code.
+`localRoot` is usually your `${workspaceRoot}` (current directory opened in VSCode). `remoteRoot` may remains empty (or missing), in this particular case, the remote path is relative, and resolved via the `PROPATH` by the remote.
+
 ## Greetings
 Largely inspired by ZaphyrVonGenevese work (https://github.com/ZaphyrVonGenevese/vscode-abl).
 Also inspired by vscode-go and vscode-rust extensions.

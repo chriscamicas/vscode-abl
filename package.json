@@ -114,7 +114,8 @@
                             "request": "attach",
                             "address": "TCP/IP address of process to be debugged",
                             "port": 3099,
-                            "localRoot": "${workspaceRoot}"
+                            "localRoot": "${workspaceRoot}",
+                            "remoteRoot": "path to remote files"
                         }
                     },
                     {
@@ -233,6 +234,10 @@
                 }
             ]
         },
+        "jsonValidation": [{
+            "fileMatch": ".openedge.json",
+            "url": "./schemas/openedge.schema.json"
+        }],
         "keybindings": [
             {
                 "when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",

@@ -71,6 +71,8 @@ interface CommonArguments {
 // This interface should always match the schema found in `package.json`.
 interface AttachRequestArguments extends DebugProtocol.AttachRequestArguments, CommonArguments {
     address?: string;
+    localRoot?: string;
+    remoteRoot?: string;
 }
 // This interface should always match the schema found in `package.json`.
 interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments, CommonArguments {
@@ -108,14 +110,9 @@ function logError(...args: any[]) {
 }
 
 function normalizePath(filePath: string) {
-    if (process.platform === 'win32') {
-        filePath = path.normalize(filePath);
-        let i = filePath.indexOf(':');
-        if (i >= 0) {
-            return filePath.slice(0, i).toUpperCase() + filePath.slice(i);
-        }
-    }
-    return filePath;
+    // Progress is compatible with forward slash, even on Windows platform
+    // Let's generalize
+    return path.posix.normalize(filePath.replace(/\\/g, '/'));
 }
 
 class AblDebugger {
@@ -319,6 +316,8 @@ class AblDebugSession extends DebugSession {
     private breakpoints: Map<string, DebugBreakpoint[]>;
     private watchpointExpressions: Set<string>;
     private threads: Set<number>;
+    private localRoot: string;
+    private remoteRoot: string;
     private debugState: DebuggerState;
     private ablDebugger: AblDebugger;
 
@@ -330,6 +329,8 @@ class AblDebugSession extends DebugSession {
         this.ablDebugger = null;
         this.breakpoints = new Map<string, DebugBreakpoint[]>();
         this.watchpointExpressions = new Set<string>();
+        this.localRoot = '';
+        this.remoteRoot = '';
 
         const logPath = path.join(os.tmpdir(), 'vscode-abl-debug.txt');
         logger.init(e => this.sendEvent(e), logPath, isServer);
@@ -351,6 +352,10 @@ class AblDebugSession extends DebugSession {
             args.trace ? logger.LogLevel.Log :
                 logger.LogLevel.Error;
         logger.setMinLogLevel(logLevel);
+        if (args.remoteRoot)
+            this.remoteRoot = normalizePath(args.remoteRoot);
+        if (args.localRoot)
+            this.localRoot = normalizePath(args.localRoot);
 
         this.ablDebugger = new AblDebugger(args.port, args.address);
 
@@ -396,6 +401,7 @@ class AblDebugSession extends DebugSession {
 
         return this.ablDebugger.connection.then(() => {
             this.ablDebugger.sendMessage('SETPROP IDE 1');
+            // this.ablDebugger.sendMessage('SETPROP RELPATH 0 GENLISTING 1');
             // this.ablDebugger.sendMessage('SETPROP RELPATH 0 GENLISTING 1');
 
             this.sendEvent(new InitializedEvent());
@@ -529,7 +535,7 @@ class AblDebugSession extends DebugSession {
 
         // foreach breakpoint : B;1;E;C:/OpenEdge/WRK/testof.p;2; ;
         // let file = normalizePath(args.source.path);
-        let file = path.posix.normalize(args.source.path.replace(/\\/g, '/'));
+        let file = this.convertLocalPathToRemote(args.source.path);
 
         if (!this.breakpoints.get(file)) {
             this.breakpoints.set(file, []);
@@ -572,12 +578,13 @@ class AblDebugSession extends DebugSession {
         this.ablDebugger.showStack().then(msg => {
             let stackFrames = msg.args.map((location, i) => {
                 let filename = path.basename(location[4]);
+                let localPath = this.convertRemotePathToLocal(location[5]);
                 return new StackFrame(
                     i,
                     location[6],
                     new Source(
                         filename,
-                        location[4],
+                        localPath,
                     ),
                     parseInt(location[8])
                 );
@@ -889,6 +896,22 @@ class AblDebugSession extends DebugSession {
             this.sendResponse(response);
             verbose('EvaluateResponse');
         }
+    }
+
+    protected convertRemotePathToLocal(remotePath: string): string {
+        if (this.localRoot) {
+            remotePath = normalizePath(remotePath);
+            remotePath.replace(this.remoteRoot, '');
+            remotePath = path.join(this.localRoot, remotePath);
+        }
+        return remotePath;
+    }
+    protected convertLocalPathToRemote(localPath: string): string {
+        if (this.localRoot) {
+            localPath = normalizePath(localPath);
+            localPath = localPath.replace(this.localRoot, this.remoteRoot);
+        }
+        return localPath;
     }
 }
 

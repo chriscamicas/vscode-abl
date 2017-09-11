@@ -1,7 +1,7 @@
 {
     "name": "openedge-abl",
     "publisher": "chriscamicas",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "description": "OpenEdge ABL language support for VS Code.",
     "displayName": "OpenEdge ABL",
     "author": "chriscamicas",
@@ -234,10 +234,12 @@
                 }
             ]
         },
-        "jsonValidation": [{
-            "fileMatch": ".openedge.json",
-            "url": "./schemas/openedge.schema.json"
-        }],
+        "jsonValidation": [
+            {
+                "fileMatch": ".openedge.json",
+                "url": "./schemas/openedge.schema.json"
+            }
+        ],
         "keybindings": [
             {
                 "when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",

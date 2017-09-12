@@ -6,7 +6,7 @@ import { OpenEdgeConfig, loadConfigFile, OPENEDGE_CONFIG_FILENAME } from './shar
 
 const readFileAsync = promisify(readFile);
 
-let openEdgeConfig: OpenEdgeConfig = {};
+let openEdgeConfig: OpenEdgeConfig = null;
 let watcher: FileSystemWatcher = null;
 
 function findConfigFile() {
@@ -18,6 +18,9 @@ function findConfigFile() {
     });
 }
 function loadAndSetConfigFile(filename: string) {
+    if (filename === null) {
+        return Promise.resolve({});
+    }
     return loadConfigFile(filename).then((config) => {
         openEdgeConfig = config;
         return openEdgeConfig;

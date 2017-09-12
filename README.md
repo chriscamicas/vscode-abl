@@ -2,8 +2,13 @@
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## What's new
-* Integrated ABL debugger
-* Fix minor syntax highlighting flaw
+* 0.6.2
+    - Fix .openedge.json won't load
+* 0.6.1
+    - Fix debugger launch failed
+* 0.6.0
+    - Integrated ABL debugger
+    - Fix minor syntax highlighting flaw
 
 ## Features
 

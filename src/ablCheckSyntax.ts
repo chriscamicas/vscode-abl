@@ -37,7 +37,7 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
 		let args = createProArgs({
 			oeConfig: oeConfig,
 			batchMode: true,
-			startupProcedure: path.join(__dirname, '../abl-src/check-syntax.p'),
+			startupProcedure: path.join(__dirname, '../../abl-src/check-syntax.p'),
 			param: filename
 		});
 		return new Promise<ICheckResult[]>((resolve, reject) => {

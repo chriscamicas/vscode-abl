@@ -34,7 +34,7 @@
         "onLanguage:abl",
         "onCommand:abl.debug.startSession"
     ],
-    "main": "./out/main",
+    "main": "./out/src/main",
     "contributes": {
         "languages": [
             {
@@ -79,6 +79,11 @@
                 "description": "Check the syntax for the current .p file"
             },
             {
+                "command": "abl.test",
+                "title": "ABL: Test",
+                "description": "Run all UnitTest"
+            },
+            {
                 "command": "abl.propath",
                 "title": "ABL: Current PROPATH",
                 "description": "See the currently set PROPATH."
@@ -98,7 +103,7 @@
             {
                 "type": "abl",
                 "label": "ABL",
-                "program": "./out/debugAdapter/ablDebug.js",
+                "program": "./out/src/debugAdapter/ablDebug.js",
                 "runtime": "node",
                 "languages": [
                     "abl"
@@ -259,9 +264,12 @@
         "util.promisify": "^1.0.0",
         "vscode-debug-logger": "^0.0.4",
         "vscode-debugadapter": "^1.11.0",
-        "vscode-debugprotocol": "^1.11.0"
+        "vscode-debugprotocol": "^1.11.0",
+        "minimatch": "^3.0.4"
     },
     "devDependencies": {
+        "@types/fs-extra": "0.0.35",
+        "@types/mocha": "^2.2.43",
         "@types/node": "^6.0.50",
         "vsce": "^1.30.0",
         "fs-extra": "^4.0.0",

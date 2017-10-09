@@ -9,11 +9,6 @@ export function openDataDictionary() {
     let env = process.env;
     let cmd = getProwinBin();
 
-    // let args = createProArgs({
-    //     startupProcedure: path.join(__dirname, '../abl-src/run.p'),
-    //     param: '_dict.p'
-    // });
-
     // TODO : reuse the openedgeconfig file and pf files defined
     let args = createProArgs({
         startupProcedure: '_dict.p'

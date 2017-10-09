@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { checkSyntax, ICheckResult, removeTestStatus } from './ablCheckSyntax';
 import { run } from './ablRun';
+import { ablTest } from './ablTest';
 import { openDataDictionary } from './ablDataDictionary';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
@@ -32,6 +33,11 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.run.currentFile', () => {
 		let ablConfig = vscode.workspace.getConfiguration('abl');
 		run(vscode.window.activeTextEditor.document.uri.fsPath, ablConfig);
+	}));
+
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.test', () => {
+		let ablConfig = vscode.workspace.getConfiguration('abl');
+		ablTest(vscode.window.activeTextEditor.document.uri.fsPath, ablConfig);
 	}));
 
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.debug.startSession', config => {

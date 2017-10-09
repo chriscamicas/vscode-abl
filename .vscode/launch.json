@@ -22,7 +22,7 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "program": "${workspaceRoot}/out/debugAdapter/ablDebug.js",
+            "program": "${workspaceRoot}/out/src/debugAdapter/ablDebug.js",
             "args": [
                 "--server=4712"
             ],

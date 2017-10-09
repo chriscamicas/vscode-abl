@@ -6,11 +6,17 @@ const readFileAsync = promisify(readFile);
 
 export const OPENEDGE_CONFIG_FILENAME = '.openedge.json';
 
+export interface TestConfig {
+    files?: string[];
+    beforeScript?: string;
+    afterScript?: string;
+}
+
 export interface OpenEdgeConfig {
     proPath?: string[];
     proPathMode?: 'append' | 'overwrite' | 'prepend';
     parameterFiles?: string[];
-    ablUnit?: {};
+    test?: TestConfig;
 }
 
 export function loadConfigFile(filename: string): Thenable<OpenEdgeConfig> {

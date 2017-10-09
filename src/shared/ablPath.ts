@@ -57,6 +57,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
         if (!openEdgeConfig.proPath || !(openEdgeConfig.proPath instanceof Array) || openEdgeConfig.proPath.length === 0) {
             openEdgeConfig.proPath = ['${workspaceRoot}'];
         }
+        openEdgeConfig.proPath.push(path.join(__dirname, '../../../abl-src'));
         let paths = openEdgeConfig.proPath.map(p => {
             p = p.replace('${workspaceRoot}', workspaceRoot);
             p = path.posix.normalize(p);
@@ -71,7 +72,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
             env.VSABL_PROPATH_MODE = 'append';
         }
     }
-    env.VSABL_SRC = path.join(__dirname, '../abl-src');
+    env.VSABL_SRC = path.join(__dirname, '../../abl-src');
     // enable the debugger
     // cf https://documentation.progress.com/output/ua/OpenEdge_latest/index.html#page/pdsoe/enabling-debugging.html
     env.ENABLE_OPENEDGE_DEBUGGER = 1;

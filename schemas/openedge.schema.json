@@ -1,35 +1,35 @@
 {
-    "definitions": {},
-    "id": "openedge.json",
-    "properties": {
-      "parameterFiles": {
-        "id": "/properties/parameterFiles",
-        "description": "Path to .pf files",
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "proPath": {
-        "id": "/properties/proPath",
-        "description": "Path to include in the PROPATH variable",
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "proPathMode": {
-        "default": "append",
-        "description": "Specify how the PROPATH is modified",
-        "enum": [
-            "append",
-            "prepend",
-            "overwrite"
-          ],
-        "id": "/properties/proPathMode",
-        "title": "proPathMode",
+  "definitions": {},
+  "id": "openedge.json",
+  "properties": {
+    "parameterFiles": {
+      "id": "/properties/parameterFiles",
+      "description": "Path to .pf files",
+      "items": {
         "type": "string"
-      }
+      },
+      "type": "array"
     },
-    "type": "object"
-  }
+    "proPath": {
+      "id": "/properties/proPath",
+      "description": "Path to include in the PROPATH variable",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "proPathMode": {
+      "default": "append",
+      "description": "Specify how the PROPATH is modified",
+      "enum": [
+        "append",
+        "prepend",
+        "overwrite"
+      ],
+      "id": "/properties/proPathMode",
+      "title": "proPathMode",
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

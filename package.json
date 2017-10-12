@@ -120,7 +120,10 @@
                             "address": "TCP/IP address of process to be debugged",
                             "port": 3099,
                             "localRoot": "${workspaceRoot}",
-                            "remoteRoot": "path to remote files"
+                            "remoteRoot": "path to remote files",
+                            "sourceMap": {
+                                "Z:\\\\path\\\\to\\\\remote\\\\files\\\\**": "c:\\\\path\\\\to\\\\local\\\\src\\\\**"
+                            }
                         }
                     },
                     {
@@ -193,6 +196,13 @@
                                 "type": "string",
                                 "description": "The root directory for remote source",
                                 "default": ""
+                            },
+                            "sourceMap": {
+                                "type": "object",
+                                "description": "source mapping for remote debugging",
+                                "default": {
+                                    "Z:\\path\\to\\remote\\files\\**": "c:\\path\\to\\local\\src\\**"
+                                }
                             }
                         }
                     }

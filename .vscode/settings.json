@@ -8,5 +8,10 @@
         "**/.DS_Store": true,
         "node_modules": true,
         "out": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "out": true
     }
 }

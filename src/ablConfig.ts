@@ -1,10 +1,6 @@
 import { FileSystemWatcher, window, workspace } from 'vscode';
-import * as jsonminify from 'jsonminify';
-import { readFile } from 'fs';
-import * as promisify from 'util.promisify';
 import { OpenEdgeConfig, loadConfigFile, OPENEDGE_CONFIG_FILENAME } from './shared/openEdgeConfigFile';
 
-const readFileAsync = promisify(readFile);
 
 let openEdgeConfig: OpenEdgeConfig = null;
 let watcher: FileSystemWatcher = null;

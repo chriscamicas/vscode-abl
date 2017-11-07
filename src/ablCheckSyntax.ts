@@ -35,7 +35,7 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
 	return getOpenEdgeConfig().then(oeConfig => {
 		let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
 		let args = createProArgs({
-			oeConfig: oeConfig,
+			parameterFiles: oeConfig.parameterFiles,
 			batchMode: true,
 			startupProcedure: path.join(__dirname, '../../abl-src/check-syntax.p'),
 			param: filename

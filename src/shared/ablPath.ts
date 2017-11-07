@@ -1,6 +1,5 @@
 import * as path from 'path';
 import { OpenEdgeConfig } from './openEdgeConfigFile';
-
 import * as fs from 'fs';
 
 export function getBinPath(toolName: string) {
@@ -20,22 +19,27 @@ export function getProwinBin() {
 export interface ProArgsOptions {
     startupProcedure: string;
     param?: string;
-    oeConfig?: OpenEdgeConfig;
+    parameterFiles?: string[];
+    databaseNames?: string[];
     batchMode?: boolean;
     debugPort?: number;
+    temporaryDirectory?: string;
 }
 export function createProArgs(options: ProArgsOptions): string[] {
     let pfArgs = [];
-    let openEdgeConfig = options.oeConfig;
-    if (openEdgeConfig && openEdgeConfig.parameterFiles) {
+    if (options.parameterFiles) {
         // pfArgs = openEdgeConfig.parameterFiles.filter(pf => pf.trim().length > 0).map(pf => { return '-pf ' + pf; });
-        pfArgs = openEdgeConfig.parameterFiles.filter(pf => pf.trim().length > 0).reduce((r, a) => r.concat('-pf', a), []);
+        pfArgs = options.parameterFiles.filter(pf => pf.trim().length > 0).reduce((r, a) => r.concat('-pf', a), []);
     }
     let args = [
-        '-T', // Redirect temp
-        process.env['TEMP'],
-        ...pfArgs
+        '-T' // Redirect temp
     ];
+    if (options.temporaryDirectory) {
+        args.push(options.temporaryDirectory);
+    } else {
+        args.push(process.env['TEMP']);
+    }
+    args = args.concat(pfArgs);
     if (options.batchMode) {
         args.push('-b');
     }
@@ -46,7 +50,7 @@ export function createProArgs(options: ProArgsOptions): string[] {
         args.push('-param', options.param);
     }
     if (options.debugPort) {
-        args.push('-debugReady', options.debugPort);
+        args.push('-debugReady', options.debugPort.toString());
     }
 
     return args;
@@ -60,6 +64,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
         openEdgeConfig.proPath.push(path.join(__dirname, '../../../abl-src'));
         let paths = openEdgeConfig.proPath.map(p => {
             p = p.replace('${workspaceRoot}', workspaceRoot);
+            p = p.replace('${workspaceFolder}', workspaceRoot);
             p = path.posix.normalize(p);
             return p;
         });
@@ -68,7 +73,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
 
         if (openEdgeConfig.proPathMode) {
             env.VSABL_PROPATH_MODE = openEdgeConfig.proPathMode;
-        } else  {
+        } else {
             env.VSABL_PROPATH_MODE = 'append';
         }
     }
@@ -78,4 +83,22 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
     env.ENABLE_OPENEDGE_DEBUGGER = 1;
 
     return env;
+}
+
+export function expandPathVariables(path: string, env: any, variables: {[key: string]: string}): string {
+    // format VSCode ${env:VAR}
+    // path = path.replace(/\${env:([^}]+)}/g, (_, n) => {
+    //     return env[n];
+    // });
+
+    // format DOS %VAR%
+    path = path.replace(/%([^%]+)%/g, (_, n) => {
+        return env[n];
+    });
+
+    // VSCode specific var ${workspaceFolder}
+    path = path.replace(/\${([^}]+)}/g, (_, n) => {
+        return variables[n];
+    });
+    return path;
 }

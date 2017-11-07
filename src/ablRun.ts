@@ -13,7 +13,7 @@ export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration):
 	return getOpenEdgeConfig().then(oeConfig => {
 		let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
 		let args = createProArgs({
-			oeConfig: oeConfig,
+			parameterFiles: oeConfig.parameterFiles,
 			batchMode: true,
 			startupProcedure: path.join(__dirname, '../../abl-src/run.p'),
 			param: filename

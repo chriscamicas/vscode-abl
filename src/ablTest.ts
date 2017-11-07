@@ -1,255 +1,144 @@
 import * as vscode from 'vscode';
-import path = require('path');
+import { OpenEdgeConfig } from './shared/openEdgeConfigFile';
 import { getOpenEdgeConfig } from './ablConfig';
 import { getProBin, createProArgs, setupEnvironmentVariables } from './shared/ablPath';
 import { create } from './OutputChannelProcess';
+import { readFile, mkdtemp } from 'fs';
+import { tmpdir } from 'os';
+
+import path = require('path');
+import xml2js = require('xml2js');
+import * as promisify from 'util.promisify';
+import * as glob from 'glob';
+
+import * as rimraf from 'rimraf';
+
+const readFileAsync = promisify(readFile);
+const globAsync = promisify(glob);
+const mkdtempAsync = promisify(mkdtemp);
+const rmdirAsync = promisify(rimraf);
 
 let outputChannel = vscode.window.createOutputChannel('ABL Tests');
+const failedStatusChar = '✘';
+const successStatusChar = '✔';
+
+const promiseSerial = funcs =>
+	funcs.reduce((promise, func) =>
+		promise.then(result => func().then(Array.prototype.concat.bind(result))),
+		Promise.resolve([]));
 
 export function ablTest(filename: string, ablConfig: vscode.WorkspaceConfiguration): Thenable<any> {
 
-	let cwd = path.dirname(filename);
+	// let cwd = path.dirname(filename);
+	let cwd = vscode.workspace.rootPath;
 
 	let cmd = getProBin();
 	return getOpenEdgeConfig().then(oeConfig => {
 		outputChannel.clear();
-		// if (!oeConfig.tests.background) {
 		outputChannel.show(true);
-		// }
 
+		outputChannel.appendLine(`Starting UnitTests`);
 
 		let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
-		let args = createProArgs({
-			oeConfig: oeConfig,
-			batchMode: true,
-			startupProcedure: path.join(__dirname, '../../abl-src/test.p'),
-			param: filename
-		});
-		return create(cmd, args, { env: env, cwd: cwd }, outputChannel);
+		let summary: any;
+		if (filename) {
+			runTestFile(filename, cmd, env, cwd, oeConfig).then(summary => {
+				outputChannel.appendLine(`Executed ${summary.tests} tests, Errors ${summary.errors}, Failures ${summary.failures}`);
+			});
+		} else {
+			oeConfig.test.files.forEach(async pattern => {
+				let files = await globAsync(pattern, { cwd: cwd });
+				let r = [];
+				for (let i = 0; i < files.length; i++) {
+					r.push(await runTestFile(files[i], cmd, env, cwd, oeConfig));
+				}
+				// console.log(`after all ${r}`);
+
+				summary = r.reduce((s1: any, s2: any) => {
+					return {
+						tests: s1.tests + s2.tests,
+						errors: s1.errors + s2.errors,
+						failures: s1.failures + s2.failures
+					};
+				});
+				outputChannel.appendLine(`Executed ${summary.tests} tests, Errors ${summary.errors}, Failures ${summary.failures}`);
+			});
+		}
+		// outputChannel.appendLine(`Finished UnitTests`);
 	});
 }
 
-// export function runDebug(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<any> {
-// 	outputChannel.clear();
-// 	let cwd = path.dirname(filename);
+async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeConfig) {
+	let outDir = await mkdtempAsync(path.join(tmpdir(), 'ablunit-'));
 
-// 	let cmd = getProBin();
-// 	return prepareProArguments(path.join(__dirname, '../abl-src/run-debug.p'), filename, true, true).then(args => {
-// 		return setupEnvironmentVariables(process.env).then(env => {
-// 			// return create(cmd, args, { env: env, cwd: cwd }, outputChannel);
+	let xmlParser = new xml2js.Parser();
+	let parseStringAsync = promisify(xmlParser.parseString);
 
-// 			let spawnOptions = { env: env, cwd: cwd };
-// 			// spawnOptions.stdio = 'pipe';
-// 			const spawnedProcess = spawn(cmd, args, spawnOptions);
-// 			vscode.
-// 		    setTimeout(() => { spawnedProcess.stdin.write('\x0D'); }, 8000);
-
-// 		});
-// 	});
-// }
-
-// function runTool(args: string[], cwd: string, severity: string, useStdErr: boolean, toolName: string, env: any, printUnexpectedOutput?: boolean): Promise<ICheckResult[]> {
-//     let cmd = getBinPath(toolName);
-//     cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
-
-//     });
-// }
-
-/*
-"command": "${env:DLC}\\bin\\_progres.exe",
-            "args": [
-                "-b",
-                "-pf",
-                "${workspaceRoot}\\.openedge\\default.pf",
-                "-T",
-                "${env:TEMP}",
-                "-p",
-                "${workspaceRoot}\\.openedge\\run.p",
-                "-param",
-                "${file},${env:DLC}\\tty\\netlib\\OpenEdge.Net.pl"
-            ],
-*/
-            /*
-	let env = getToolsEnvVars();
-	let goRuntimePath = getGoRuntimePath();
-
-	if (!goRuntimePath) {
-		vscode.window.showInformationMessage('Cannot find "go" binary. Update PATH or GOROOT appropriately');
-		return Promise.resolve([]);
-	}
-
-	let testPromise: Thenable<boolean>;
-	let tmpCoverPath;
-	let runTest = () => {
-		if (testPromise) {
-			return testPromise;
-		}
-
-		let buildFlags = goConfig['testFlags'] || goConfig['buildFlags'] || [];
-
-		let args = buildFlags;
-		if (goConfig['coverOnSave']) {
-			tmpCoverPath = path.normalize(path.join(os.tmpdir(), 'go-code-cover'));
-			args = ['-coverprofile=' + tmpCoverPath, ...buildFlags];
-		}
-
-		testPromise = goTest({
-			goConfig: goConfig,
-			dir: cwd,
-			flags: args,
-			background: true
+	// TODO specif args for Tests
+	// TODO -db ?
+	if (oeConfig.test.beforeEach) {
+		let beforeCmd = oeConfig.test.beforeEach.cmd;
+		beforeCmd = beforeCmd.replace(/%([^%]+)%/g, (_, n) => {
+			return env[n];
 		});
-		return testPromise;
+		let beforeCwd = oeConfig.test.beforeEach.cwd || cwd;
+		await create(beforeCmd, ['-c', `echo BASH before ${fileName}`], { env: env, cwd: beforeCwd }, outputChannel);
+		// await create(beforeCmd, oeConfig.test.beforeEach.args, { env: env, cwd: cwd }, outputChannel);
+	}
+	let args = createProArgs({
+		parameterFiles: oeConfig.parameterFiles,
+		temporaryDirectory: outDir,
+		batchMode: true,
+		startupProcedure: 'ABLUnitCore.p',
+		param: `${fileName} -outputLocation ${outDir}`
+	});
+	let outputFile = path.join(outDir, 'results.xml');
+
+	let consoleOutput = await create(cmd, args, { env: env, cwd: cwd }, outputChannel);
+	let content = await readFileAsync(outputFile);
+	let result = await parseStringAsync(content);
+	let testResultSummary = {
+		tests: 0,
+		errors: 0,
+		failures: 0
 	};
+	if (result.testsuites) {
+		result.testsuites.testsuite.forEach(testsuite => {
+			testsuite.testcase.forEach(t => {
 
-	if (!!goConfig['buildOnSave'] && goConfig['buildOnSave'] !== 'off') {
-		const tmpPath = path.normalize(path.join(os.tmpdir(), 'go-code-check'));
-		let buildFlags = goConfig['buildFlags'] || [];
-		// Remove the -i flag as it will be added later anyway
-		if (buildFlags.indexOf('-i') > -1) {
-			buildFlags.splice(buildFlags.indexOf('-i'), 1);
-		}
+				let statusChar = t.$.status !== 'Success' ? failedStatusChar : successStatusChar;
+				outputChannel.appendLine(`\t${statusChar} ${t.$.name}`);
 
-		// We use `go test` instead of `go build` because the latter ignores test files
-		let buildArgs: string[] = ['test', '-i', '-c', '-o', tmpPath, ...buildFlags];
-		if (goConfig['buildTags']) {
-			buildArgs.push('-tags');
-			buildArgs.push('"' + goConfig['buildTags'] + '"');
-		}
-
-		if (goConfig['buildOnSave'] === 'workspace') {
-			// Use `go list ./...` to get list of all packages under the vscode workspace
-			// And then run `go test -i -c -o` on each of them
-			let outerBuildPromise = new Promise<any>((resolve, reject) => {
-				cp.execFile(goRuntimePath, ['list', './...'], { cwd: vscode.workspace.rootPath }, (err, stdout, stderr) => {
-					if (err) {
-						console.log('Could not find packages to build');
-						return resolve([]);
-					}
-					let importPaths = stdout.split('\n');
-					let buildPromises = [];
-					importPaths.forEach(pkgPath => {
-						// Skip compiling vendor packages
-						if (!pkgPath || pkgPath.indexOf('/vendor/') > -1) {
-							return;
-						}
-						buildPromises.push(runTool(
-							buildArgs.concat(pkgPath),
-							cwd,
-							'error',
-							true,
-							null,
-							env,
-							true
-						));
-					});
-					return Promise.all(buildPromises).then((resultSets) => {
-						return resolve([].concat.apply([], resultSets));
+				let stacktrace = [];
+				if (t.$.status === 'Failure') {
+					stacktrace = t.failure;
+				}
+				if (t.$.status === 'Error') {
+					stacktrace = t.error;
+				}
+				stacktrace.forEach(f => {
+					f.split('\r\n').filter(l => l.indexOf('ABLUnit') === -1).forEach(l => {
+						outputChannel.appendLine(`\t\t↱ ${l}`);
 					});
 				});
+
 			});
-			runningToolsPromises.push(outerBuildPromise);
-		} else {
-			// Find the right importPath instead of directly using `.`. Fixes https://github.com/Microsoft/vscode-go/issues/846
-			let currentGoWorkspace = getCurrentGoWorkspaceFromGOPATH(cwd);
-			let importPath = currentGoWorkspace ? cwd.substr(currentGoWorkspace.length + 1) : '.';
-
-			runningToolsPromises.push(runTool(
-				buildArgs.concat(importPath),
-				cwd,
-				'error',
-				true,
-				null,
-				env,
-				true
-			));
-		}
-	}
-
-	if (!!goConfig['testOnSave']) {
-		statusBarItem.show();
-		statusBarItem.text = 'Tests Running';
-		runTest().then(success => {
-			if (statusBarItem.text === '') {
-				return;
-			}
-			if (success) {
-				statusBarItem.text = 'Tests Passed';
-			} else {
-				statusBarItem.text = 'Tests Failed';
-			}
 		});
+		testResultSummary.tests += parseInt(result.testsuites.$.tests);
+		testResultSummary.errors += parseInt(result.testsuites.$.errors);
+		testResultSummary.failures += parseInt(result.testsuites.$.failures);
+		// outputChannel.appendLine(`Executed ${result.testsuites.$.tests} tests, Errors ${result.testsuites.$.errors}, Failures ${result.testsuites.$.failures}`);
 	}
+	await rmdirAsync(outDir);
 
-	if (!!goConfig['lintOnSave'] && goConfig['lintOnSave'] !== 'off') {
-		let lintTool = goConfig['lintTool'] || 'golint';
-		let lintFlags: string[] = goConfig['lintFlags'] || [];
-
-		let args = [];
-		let configFlag = '--config=';
-		lintFlags.forEach(flag => {
-			// --json is not a valid flag for golint and in gometalinter, it is used to print output in json which we dont want
-			if (flag === '--json') {
-				return;
-			}
-			if (flag.startsWith(configFlag)) {
-				let configFilePath = flag.substr(configFlag.length);
-				configFilePath = resolvePath(configFilePath, vscode.workspace.rootPath);
-				args.push(`${configFlag}${configFilePath}`);
-				return;
-			}
-			args.push(flag);
+	if (oeConfig.test.afterEach) {
+		let afterCmd = oeConfig.test.afterEach.cmd;
+		afterCmd = afterCmd.replace(/%([^%]+)%/g, (_, n) => {
+			return env[n];
 		});
-		if (lintTool === 'gometalinter' && args.indexOf('--aggregate') === -1) {
-			args.push('--aggregate');
-		}
-
-		let lintWorkDir = cwd;
-
-		if (goConfig['lintOnSave'] === 'workspace') {
-			args.push('./...');
-			lintWorkDir = vscode.workspace.rootPath;
-		}
-
-		runningToolsPromises.push(runTool(
-			args,
-			lintWorkDir,
-			'warning',
-			false,
-			lintTool,
-			env
-		));
+		let afterCwd = oeConfig.test.afterEach.cwd || cwd;
+		await create(afterCmd, ['-c', `echo BASH after ${fileName}`], { env: env, cwd: afterCwd }, outputChannel);
+		// await create(afterCmd, oeConfig.test.afterEach.args, { env: env, cwd: cwd }, outputChannel);
 	}
-
-	if (!!goConfig['vetOnSave'] && goConfig['vetOnSave'] !== 'off') {
-		let vetFlags = goConfig['vetFlags'] || [];
-		let vetArgs = ['tool', 'vet', ...vetFlags, '.'];
-		let vetWorkDir = cwd;
-
-		if (goConfig['vetOnSave'] === 'workspace') {
-			vetWorkDir = vscode.workspace.rootPath;
-		}
-
-		runningToolsPromises.push(runTool(
-			vetArgs,
-			vetWorkDir,
-			'warning',
-			true,
-			null,
-			env
-		));
-	}
-
-	if (!!goConfig['coverOnSave']) {
-		let coverPromise = runTest().then(success => {
-			if (!success) {
-				return [];
-			}
-			// FIXME: it's not obvious that tmpCoverPath comes from runTest()
-			return getCoverage(tmpCoverPath);
-		});
-		runningToolsPromises.push(coverPromise);
-	}
-
-	return Promise.all(runningToolsPromises).then(resultSets => [].concat.apply([], resultSets));
-}*/
+	return testResultSummary;
+}

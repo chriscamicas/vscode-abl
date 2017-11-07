@@ -81,6 +81,32 @@ You can map remote path to local path (1 to 1) using `localRoot` and `remoteRoot
 
 You can also map different remote path to local path via source mapping `sourceMap`. This is useful if you don't have all the source code in a unique project (ex dependencies).
 
+### Unit tests
+Based upon the ABLUnit framework (need to be installed locally), you can specify launch parameters to find and execute test files
+```
+{
+    "test": {
+        "files":[
+            "tests/*.test.p"
+        ],
+        "beforeEach": {
+            "cmd": "%ProgramFiles%\\Git\\bin\\sh.exe",
+            "args": [
+                "-c",
+                "echo starting"
+            ]
+        },
+        "afterEach": {
+            "cmd": "%ProgramFiles%\\Git\\bin\\sh.exe",
+            "args": [
+                "-c",
+                "echo done"
+            ]
+        }
+    }
+}
+```
+
 ## Greetings
 Largely inspired by ZaphyrVonGenevese work (https://github.com/ZaphyrVonGenevese/vscode-abl).
 Also inspired by vscode-go and vscode-rust extensions.

@@ -38,7 +38,7 @@ export async function create(spawnCommand: string, spawnArgs: string[] | undefin
     spawnOptions.stdio = 'pipe';
     const spawnedProcess = spawn(spawnCommand, spawnArgs, spawnOptions);
     outputChannel.show();
-    const result = await process(spawnedProcess, outputChannel);
+    const result = await process(spawnedProcess, outputChannel, { displayClose: false, displayExit: false });
     if (result.success && result.code === 0) {
         // outputChannel.hide();
         // outputChannel.dispose();
@@ -89,7 +89,7 @@ export function process(process: ChildProcess, outputChannel: OutputChannel, opt
         });
         process.on('exit', (code, signal) => {
             if (getOption(options, o => o.displayExit, true))
-            outputChannel.appendLine(`\nexit: code=${code}, signal=${signal}`);
+                outputChannel.appendLine(`\nexit: code=${code}, signal=${signal}`);
             processExited = true;
             if (processClosed) {
                 processProcessEnding(code);

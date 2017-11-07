@@ -1,7 +1,12 @@
 DEFINE VARIABLE ch_prog AS CHARACTER NO-UNDO.
 
 /* Extracts the parameters */
-ASSIGN ch_prog = ENTRY( 1, SESSION:PARAMETER ).
+
+ASSIGN ch_prog = OS-GETENV ( "VSABL_STARTUP_PROGRAM" ).
+if ch_prog = "" then
+do:
+    ASSIGN ch_prog = ENTRY( 1, SESSION:PARAMETER ).
+end.
 
 RUN VALUE( REPLACE( PROGRAM-NAME( 1 ), "run-debug.p", "read-env-var.p") ).
 

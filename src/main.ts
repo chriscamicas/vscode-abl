@@ -37,6 +37,11 @@ export function activate(ctx: vscode.ExtensionContext): void {
 
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.test', () => {
 		let ablConfig = vscode.workspace.getConfiguration('abl');
+		ablTest(null, ablConfig);
+	}));
+
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.test.currentFile', () => {
+		let ablConfig = vscode.workspace.getConfiguration('abl');
 		ablTest(vscode.window.activeTextEditor.document.uri.fsPath, ablConfig);
 	}));
 

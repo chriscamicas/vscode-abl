@@ -13,6 +13,8 @@ import { convertDataToDebuggerMessage, DebugMessage, DebugMessageArray, DebugMes
 import * as minimatch from 'minimatch';
 // require('console-stamp')(console);
 
+const DEFAULT_DEBUG_PORT = 3099;
+
 interface DebuggerState {
     exited: boolean;
     exitStatus: number;
@@ -336,14 +338,17 @@ class AblDebugSession extends DebugSession {
 
         let filename = args.program;
         let cwd = args.cwd || path.dirname(filename);
+        this.localRoot = normalizePath(args.cwd);
+        args.port = args.port || DEFAULT_DEBUG_PORT;
 
         loadConfigFile(path.join(args.cwd, OPENEDGE_CONFIG_FILENAME)).then(oeConfig => {
             let env = setupEnvironmentVariables(process.env, oeConfig, cwd);
+            env.VSABL_STARTUP_PROGRAM = filename;
             let proArgs = createProArgs({
-                oeConfig: oeConfig,
+                parameterFiles: oeConfig.parameterFiles,
                 batchMode: true,
                 startupProcedure: path.join(__dirname, '../../../abl-src/run-debug.p'),
-                param: filename,
+                param: args.args ? args.args.join(' ') : '',
                 debugPort: args.port
             });
 
@@ -374,11 +379,16 @@ class AblDebugSession extends DebugSession {
             this.initializeDebugger(attachArgs).then(() => {
                 // Send a key, because the spawned process is waiting for the debugger to connect
                 spawnedProcess.stdin.write('\x0D');
-                if (typeof args.stopOnEntry === 'boolean' && args.stopOnEntry === false) {
-                    this.ablDebugger.sendMessage('cont');
-                } else {
+                if (args.stopOnEntry) {
                     this.ablDebugger.sendMessage('interrupt');
+                } else {
+                    this.ablDebugger.sendMessage('cont');
                 }
+                // if (typeof args.stopOnEntry === 'boolean' && args.stopOnEntry === false) {
+                //     this.ablDebugger.sendMessage('cont');
+                // } else {
+                //     this.ablDebugger.sendMessage('interrupt');
+                // }
                 this.sendResponse(response);
                 verbose('LaunchResponse');
             }, err => {
@@ -391,6 +401,7 @@ class AblDebugSession extends DebugSession {
 
     protected attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments): void {
         verbose('AttachRequest');
+        args.port = args.port || DEFAULT_DEBUG_PORT;
         this.initializeDebugger(args).then(() => {
             this.sendResponse(response);
             verbose('AttachResponse');

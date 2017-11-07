@@ -84,6 +84,11 @@
                 "description": "Run all UnitTest"
             },
             {
+                "command": "abl.test.currentFile",
+                "title": "ABL: Test current file",
+                "description": "Run current UnitTest file"
+            },
+            {
                 "command": "abl.propath",
                 "title": "ABL: Current PROPATH",
                 "description": "See the currently set PROPATH."
@@ -119,7 +124,7 @@
                             "request": "attach",
                             "address": "TCP/IP address of process to be debugged",
                             "port": 3099,
-                            "localRoot": "${workspaceRoot}",
+                            "localRoot": "^\"\\${workspaceFolder}\"",
                             "remoteRoot": "path to remote files",
                             "sourceMap": {
                                 "Z:\\\\path\\\\to\\\\remote\\\\files\\\\**": "c:\\\\path\\\\to\\\\local\\\\src\\\\**"
@@ -134,8 +139,7 @@
                             "type": "abl",
                             "request": "launch",
                             "program": "^\"${1:\\${file}}\"",
-                            "port": 3099,
-                            "cwd": "${workspaceRoot}"
+                            "cwd": "^\"\\${workspaceFolder}\""
                         }
                     }
                 ],
@@ -145,17 +149,20 @@
                         "type": "abl",
                         "request": "attach",
                         "port": 3099,
-                        "address": "127.0.0.1"
+                        "address": "127.0.0.1",
+                        "localRoot": "${workspaceFolder}"
                     }
                 ],
                 "configurationAttributes": {
                     "launch": {
-                        "required": [],
+                        "required": [
+                            "program"
+                        ],
                         "properties": {
                             "stopOnEntry": {
                                 "type": "boolean",
-                                "description": "Automatically stop program after launch.",
-                                "default": true
+                                "description": "Automatically stop the program at the first line executed.",
+                                "default": false
                             },
                             "port": {
                                 "type": "number",
@@ -165,17 +172,27 @@
                             "program": {
                                 "type": "string",
                                 "description": "The program to start.",
-                                "default": "startup.p"
+                                "default": "${file}"
                             },
                             "cwd": {
                                 "type": "string",
                                 "description": "The working directory.",
-                                "default": "${workspaceRoot}"
+                                "default": "${workspaceFolder}"
+                            },
+                            "sourceMap": {
+                                "type": "object",
+                                "description": "source mapping for remote debugging",
+                                "default": {
+                                    "Z:\\path\\to\\remote\\files\\**": "c:\\path\\to\\local\\src\\**"
+                                }
                             }
                         }
                     },
                     "attach": {
-                        "required": [],
+                        "required": [
+                            "address",
+                            "port"
+                        ],
                         "properties": {
                             "port": {
                                 "type": "number",
@@ -190,7 +207,7 @@
                             "localRoot": {
                                 "type": "string",
                                 "description": "The root directory for local source",
-                                "default": "${workspaceRoot}"
+                                "default": "${workspaceFolder}"
                             },
                             "remoteRoot": {
                                 "type": "string",
@@ -270,12 +287,15 @@
     },
     "dependencies": {
         "abl-tmlanguage": "git+https://github.com/chriscamicas/abl-tmlanguage.git",
+        "glob": "^7.1.2",
         "jsonminify": "^0.4.1",
+        "minimatch": "^3.0.4",
+        "rimraf": "^2.6.2",
         "util.promisify": "^1.0.0",
         "vscode-debug-logger": "^0.0.4",
         "vscode-debugadapter": "^1.11.0",
         "vscode-debugprotocol": "^1.11.0",
-        "minimatch": "^3.0.4"
+        "xml2js": "^0.4.19"
     },
     "devDependencies": {
         "@types/fs-extra": "0.0.35",

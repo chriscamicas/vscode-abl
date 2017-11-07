@@ -8,10 +8,18 @@ export const OPENEDGE_CONFIG_FILENAME = '.openedge.json';
 
 export interface TestConfig {
     files?: string[];
-    beforeScript?: string;
-    afterScript?: string;
+    beforeAll?: Command;
+    afterAll?: Command;
+    beforeEach?: Command;
+    afterEach?: Command;
 }
 
+export interface Command {
+    cmd: string;
+    args?: string[];
+    env?: string[];
+    cwd?: string;
+}
 export interface OpenEdgeConfig {
     proPath?: string[];
     proPathMode?: 'append' | 'overwrite' | 'prepend';

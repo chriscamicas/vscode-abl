@@ -2,6 +2,10 @@
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## What's new
+* 0.6.6
+    - Fix syntax highlight issue #9
+    - Migrate to DebugConfigurationProvider #10
+    - Integration with ABLUnit Test framework
 * 0.6.4
     - Highlight for (scoped|global)-define and analyze-(suspend|resume)
 * 0.6.3
@@ -34,7 +38,7 @@ You can create a local config file for your project named `.openedge.json`, with
 {
     "proPath": [
         "c:\\temp",
-        "${workspaceRoot}"
+        "${workspaceFolder}"
     ],
     "proPathMode": "append", // overwrite, prepend
     "parameterFiles": [ // -pf

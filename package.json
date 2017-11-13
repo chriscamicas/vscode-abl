@@ -22,7 +22,7 @@
     },
     "icon": "images/progress_icon.png",
     "engines": {
-        "vscode": "^1.14.0"
+        "vscode": "^1.17.0"
     },
     "categories": [
         "Languages",
@@ -32,7 +32,7 @@
     ],
     "activationEvents": [
         "onLanguage:abl",
-        "onCommand:abl.debug.startSession"
+        "onDebug"
     ],
     "main": "./out/src/main",
     "contributes": {
@@ -108,12 +108,16 @@
             {
                 "type": "abl",
                 "label": "ABL",
+                "enableBreakpointsFor": {
+                    "languageIds": [
+                        "abl"
+                    ]
+                },
                 "program": "./out/src/debugAdapter/ablDebug.js",
                 "runtime": "node",
                 "languages": [
                     "abl"
                 ],
-                "startSessionCommand": "abl.debug.startSession",
                 "configurationSnippets": [
                     {
                         "label": "ABL: Attach",
@@ -141,16 +145,6 @@
                             "program": "^\"${1:\\${file}}\"",
                             "cwd": "^\"\\${workspaceFolder}\""
                         }
-                    }
-                ],
-                "initialConfigurations": [
-                    {
-                        "name": "Attach",
-                        "type": "abl",
-                        "request": "attach",
-                        "port": 3099,
-                        "address": "127.0.0.1",
-                        "localRoot": "${workspaceFolder}"
                     }
                 ],
                 "configurationAttributes": {
@@ -293,18 +287,18 @@
         "rimraf": "^2.6.2",
         "util.promisify": "^1.0.0",
         "vscode-debug-logger": "^0.0.4",
-        "vscode-debugadapter": "^1.11.0",
-        "vscode-debugprotocol": "^1.11.0",
+        "vscode-debugadapter": "^1.24.0",
+        "vscode-debugprotocol": "^1.24.0",
         "xml2js": "^0.4.19"
     },
     "devDependencies": {
         "@types/fs-extra": "0.0.35",
-        "@types/mocha": "^2.2.43",
-        "@types/node": "^6.0.50",
-        "vsce": "^1.30.0",
-        "fs-extra": "^4.0.0",
-        "tslint": "^5.5.0",
-        "typescript": "^2.4.1",
-        "vscode": "^1.1.4"
+        "@types/mocha": "^2.2.44",
+        "@types/node": "^6.0.90",
+        "fs-extra": "^4.0.2",
+        "tslint": "^5.8.0",
+        "typescript": "^2.6.1",
+        "vsce": "^1.32.0",
+        "vscode": "^1.1.6"
     }
 }

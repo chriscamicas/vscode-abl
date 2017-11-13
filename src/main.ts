@@ -3,6 +3,7 @@ import { checkSyntax, ICheckResult, removeTestStatus } from './ablCheckSyntax';
 import { run } from './ablRun';
 import { ablTest } from './ablTest';
 import { openDataDictionary } from './ablDataDictionary';
+import { AblDebugConfigurationProvider } from './debugAdapter/ablDebugConfigurationProvider';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
 let warningDiagnosticCollection: vscode.DiagnosticCollection;
@@ -12,7 +13,9 @@ export function activate(ctx: vscode.ExtensionContext): void {
         let useLangServer = vscode.workspace.getConfiguration('go')['useLanguageServer'];
         let langServerFlags: string[] = vscode.workspace.getConfiguration('go')['languageServerFlags'] || [];
         let toolsGopath = vscode.workspace.getConfiguration('go')['toolsGopath'];
-    */
+	*/
+	ctx.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('abl', new AblDebugConfigurationProvider()));
+
 	startBuildOnSaveWatcher(ctx.subscriptions);
 
 

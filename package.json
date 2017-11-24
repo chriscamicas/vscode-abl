@@ -1,7 +1,7 @@
 {
     "name": "openedge-abl",
     "publisher": "chriscamicas",
-    "version": "0.7.0",
+    "version": "0.7.1",
     "description": "OpenEdge ABL language support for VS Code.",
     "displayName": "OpenEdge ABL",
     "author": "chriscamicas",
@@ -298,7 +298,7 @@
         "fs-extra": "^4.0.2",
         "tslint": "^5.8.0",
         "typescript": "^2.6.1",
-        "vsce": "^1.32.0",
+        "vsce": "^1.33.2",
         "vscode": "^1.1.6"
     }
 }

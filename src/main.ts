@@ -1,9 +1,15 @@
+// The module 'vscode' contains the VS Code extensibility API
+// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+
 import { checkSyntax, ICheckResult, removeTestStatus } from './ablCheckSyntax';
 import { run } from './ablRun';
 import { ablTest } from './ablTest';
 import { openDataDictionary } from './ablDataDictionary';
 import { AblDebugConfigurationProvider } from './debugAdapter/ablDebugConfigurationProvider';
+
+import { ABL_MODE } from './ablMode';
+import { AblDocumentSymbolProvider } from './ablDefinitionProvider';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
 let warningDiagnosticCollection: vscode.DiagnosticCollection;
@@ -68,6 +74,11 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	ctx.subscriptions.push(errorDiagnosticCollection);
 	warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-warning');
 	ctx.subscriptions.push(warningDiagnosticCollection);
+
+	// Document Symbol Provider
+	ctx.subscriptions.push(
+        vscode.languages.registerDocumentSymbolProvider(
+            ABL_MODE, new AblDocumentSymbolProvider()));
 
 
 }

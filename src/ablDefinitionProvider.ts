@@ -15,19 +15,6 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
             return new Promise((resolve, reject) => {
                 var symbols = [];
     
-                /*
-                for (var i = 0; i < document.lineCount; i++) {
-                    var line = document.lineAt(i);
-                    if (line.text.startsWith("def")) {
-                        symbols.push({
-                            name: line.text.substr(1),
-                            kind: vscode.SymbolKind.Field,
-                            location: new vscode.Location(document.uri, line.range)
-                        })
-                    }
-                }
-                */
-
                 let parse_status = new ParseStatus();
 
                 let parse_mode = PARSE_INSTRUCTION;
@@ -145,7 +132,7 @@ class ParseStatus {
     }
 }
 
-// sucht nach dem Ende eines Kommentars
+// Search for Comment End
 function parseForCommentEnd (pStatus: ParseStatus) {
     // check start comment
     let comment_start = 0;
@@ -179,7 +166,7 @@ function parseForCommentEnd (pStatus: ParseStatus) {
     return pStatus;
 }
 
-// sucht nach dem Ende eines Strings
+// Search for String End
 function parseForStringEnd (pStatus: ParseStatus) {
 
     let end_quote = -1;
@@ -212,9 +199,14 @@ function parseInstruction (pInstruction) {
     if (pInstruction.startsWith("def")) {
         let words = pInstruction.split(/\s+/);
 
-        // check buffer, var and param
+        /* 
+         * Walk over all words of the instruction
+         * certain keywords identify the type of definition (like parameter or variable)
+         * this will be followed by the name
+         */
         buffer: for (let i = 1; i < words.length; i++) {
             switch(words[i]) {
+                // reserverd words that might show up in a definition
                 case "new":
                 case "global":
                 case "shared":
@@ -231,6 +223,7 @@ function parseInstruction (pInstruction) {
                 case "input-output":
                 case "return":
                     break;
+                // mark these as objects unless something better comes along
                 case "buffer":
                 case "dataset":
                 case "data-source":
@@ -251,6 +244,7 @@ function parseInstruction (pInstruction) {
                         };
                     }
                     break buffer;
+                // Enumerations
                 case "enum":
                     i++;
                     if (words[i]) {
@@ -260,6 +254,7 @@ function parseInstruction (pInstruction) {
                         };
                     }
                     break buffer;
+                // Events
                 case "event":
                     i++;
                     if (words[i]) {
@@ -269,6 +264,7 @@ function parseInstruction (pInstruction) {
                         };
                     }
                     break buffer;
+                // Parameter
                 case "parameter":
                     i++;
                     if (words[i]) {
@@ -278,6 +274,7 @@ function parseInstruction (pInstruction) {
                         };
                     }
                     break buffer;
+                // Property
                 case "property":
                     i++;
                     if (words[i]) {
@@ -287,15 +284,17 @@ function parseInstruction (pInstruction) {
                         };
                     }
                     break buffer;
+                // Stream
                 case "stream":
                     i++;
                     if (words[i]) {
                         return {
                             name: words[i],
-                            kind: vscode.SymbolKind.Property
+                            kind: vscode.SymbolKind.File
                         };
                     }
                     break buffer;
+                // Variable
                 case "var":
                 case "vari":
                 case "variab":

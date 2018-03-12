@@ -35,7 +35,7 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 
                 let comment_depth = 0;
 
-                main: for (var i = 0; i < document.lineCount; i++) {
+                for (var i = 0; i < document.lineCount; i++) {
                     let line = document.lineAt(i);
                     let comp = line.text.toLowerCase().trim();
 
@@ -92,25 +92,29 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
                     }
                     parse_status.instruction_string += parse_status.parse_string;
 
-                    // check for colon (start block)
-                    let i_end = parse_status.instruction_string.search(/:(?=\s|$)/);
-                    if (i_end >= 0) {
-                        // block logic
-                    }
-
-                    // check for dot (end of command)
-                    comp = "";
-                    i_end = parse_status.instruction_string.search(/\.(?=\s|$)/);
-                    if (i_end >= 0) {
+                    // check for colon (start block) and dot (end of command)
+                    let i_end = parse_status.instruction_string.search(/:(?=\s|$)|\.(?=\s|$)/);
+                    while (i_end >= 0) {
+                        let end_char = parse_status.instruction_string.substr(i_end, 1);
                         comp = parse_status.instruction_string.substring(0, i_end).trim();
                         parse_status.instruction_string = parse_status.instruction_string.substr(i_end + 1);
-                        let resultSymbol = parseInstruction(comp);
-                        if (resultSymbol != null ) {
-                            let pUri = document.uri;
-                            let pLoc = new vscode.Location(document.uri, document.lineAt(parse_status.instruction_start_line).range);
-                            let pSymbol = new vscode.SymbolInformation(resultSymbol.name, resultSymbol.kind, "", pLoc);
-                            symbols.push(pSymbol);
+                        
+                        if (end_char == ':') {
+                            // block parse
+
+                        } else {
+                            // command parse
+                            let resultSymbol = parseInstruction(comp);
+                            if (resultSymbol != null ) {
+                                let pUri = document.uri;
+                                let pLoc = new vscode.Location(document.uri, document.lineAt(parse_status.instruction_start_line).range);
+                                let pSymbol = new vscode.SymbolInformation(resultSymbol.name, resultSymbol.kind, "", pLoc);
+                                symbols.push(pSymbol);
+                            }
+
                         }
+                        // check again for colon (start block) and dot (end of command)
+                        i_end = parse_status.instruction_string.search(/:(?=\s|$)|\.(?=\s|$)/);
                     }
                 }
     
@@ -120,6 +124,7 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 
 }
 
+// store information about the parse state
 class ParseStatus {
     public parse_mode: number;
     public parse_depth: number;

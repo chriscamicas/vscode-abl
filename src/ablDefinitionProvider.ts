@@ -33,7 +33,7 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
                     }
 
                     // tilde bullshit (see abl documentation)
-                    // need to evaluate all tildes before we do anything else
+                    // todo: need to evaluate all tildes before we do anything else
 
                     // already in comment mode
                     if (parse_status.parse_mode == PARSE_COMMENT) {
@@ -79,19 +79,24 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
                     }
                     parse_status.instruction_string += parse_status.parse_string;
 
-                    // check for colon (start block) and dot (end of command)
+                    /* 
+                     * check for colon (start block) and dot (end of command)
+                     * must be followed by white-space or line-end otherwise its something else
+                     */ 
                     let i_end = parse_status.instruction_string.search(/:(?=\s|$)|\.(?=\s|$)/);
                     while (i_end >= 0) {
                         let end_char = parse_status.instruction_string.substr(i_end, 1);
                         comp = parse_status.instruction_string.substring(0, i_end).trim();
                         parse_status.instruction_string = parse_status.instruction_string.substr(i_end + 1);
                         
+                        var resultSymbol = null;
                         if (end_char == ':') {
                             // block parse
-
+                            resultSymbol = parseBlock(comp);
                         } else {
                             // command parse
-                            let resultSymbol = parseInstruction(comp);
+                            resultSymbol = parseInstruction(comp);
+                        }
                             if (resultSymbol != null ) {
                                 let pUri = document.uri;
                                 let pLoc = new vscode.Location(document.uri, document.lineAt(parse_status.instruction_start_line).range);
@@ -99,7 +104,7 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
                                 symbols.push(pSymbol);
                             }
 
-                        }
+                        // }
                         // check again for colon (start block) and dot (end of command)
                         i_end = parse_status.instruction_string.search(/:(?=\s|$)|\.(?=\s|$)/);
                     }
@@ -192,6 +197,85 @@ function parseForStringEnd (pStatus: ParseStatus) {
     }
 
     return pStatus;
+}
+
+// create symbol for Block
+function parseBlock (pBlock: String) {
+    // empty string, nothing to do
+    if (pBlock.length == 0) {
+        return null;
+    }
+    // last char is colon, we wont need that
+    if (pBlock.substr(pBlock.length - 1, 1) == ":" ) {
+        pBlock = pBlock.substr(0, pBlock.length - 1);
+    }
+    // split into words
+    let words = pBlock.split(/\s+/);
+    // no words, no work
+    if (words.length == 0) {
+        return null;
+    }
+    // is this a label or a block
+    switch(words[0]) {
+        case "case":
+        case "catch":
+        case "destructor":
+        case "do":
+        case "else": // may precede a block
+        case "finally":
+        case "for":
+        case "get":
+        case "if": // if statements may precede a block
+        case "interface":
+        case "method":
+        case "on": // on statements may precede a block
+        case "otherwise": // may precede a block
+        case "repeat":
+        case "set":
+        case "triggers":
+        case "when": // may precede a block
+            // ignore those blocks
+            return null;
+        case "class":
+            return {
+                name: words[1],
+                kind: vscode.SymbolKind.Class
+            };
+        case "constructor":
+            if (words[1] == "private" || words[1] == "public" || words[1] == "protected" || words[1] == "static") {
+                return {
+                    name: words[2],
+                    kind: vscode.SymbolKind.Constructor
+                };    
+            }
+            return {
+                name: words[1],
+                kind: vscode.SymbolKind.Constructor
+            };
+        case "enum":
+            return {
+                name: words[1],
+                kind: vscode.SymbolKind.Enum
+            };
+        case "function":
+        case "procedure":
+            return {
+                name: words[1],
+                kind: vscode.SymbolKind.Function
+            };
+        case "method":
+            return {
+                name: words[0],
+                kind: vscode.SymbolKind.Method
+            };
+        // must be a label
+        default: 
+            return {
+                name: words[0],
+                kind: vscode.SymbolKind.Key
+            };
+
+    }
 }
 
 // create symbol for instruction

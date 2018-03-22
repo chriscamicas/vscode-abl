@@ -34,6 +34,37 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 
                     // tilde bullshit (see abl documentation)
                     // todo: need to evaluate all tildes before we do anything else
+                    var tildePos = 0;
+
+                    // stuff escaped by tilde
+                    parse_status.parse_string = parse_status.parse_string.replace("~'", "''");
+                    parse_status.parse_string = parse_status.parse_string.replace('~"', '""');
+                    parse_status.parse_string = parse_status.parse_string.replace("~\\", "\\");
+                    parse_status.parse_string = parse_status.parse_string.replace("~{", "{");
+                    // replace special chars with blank, we dont evaluate them anyway
+                    parse_status.parse_string = parse_status.parse_string.replace("~t", " ");
+                    parse_status.parse_string = parse_status.parse_string.replace("~r", " ");
+                    parse_status.parse_string = parse_status.parse_string.replace("~n", " ");
+                    parse_status.parse_string = parse_status.parse_string.replace("~E", " ");
+                    parse_status.parse_string = parse_status.parse_string.replace("~b", " ");
+                    parse_status.parse_string = parse_status.parse_string.replace("~f", " ");
+
+                    // check octal char
+                    tildeCheck: while (true) {
+                        tildePos = parse_status.parse_string.search(/~[0-3][0-7][0-7]/);
+                        // no tilde found
+                        if (tildePos < 0) {
+                            break tildeCheck;
+                        }
+                        let replaceMe = parse_status.parse_string.substr(tildePos, 4);
+                        parse_status.parse_string = parse_status.parse_string.replace(replaceMe, " ");
+                    }
+
+                    // remove single tilde
+                    parse_status.parse_string = parse_status.parse_string.replace(/~(?!~)/, " ");
+
+                    // double tilde for tilde
+                    parse_status.parse_string = parse_status.parse_string.replace("~~", "~");
 
                     // already in comment mode
                     if (parse_status.parse_mode == PARSE_COMMENT) {
@@ -396,4 +427,15 @@ function parseInstruction (pInstruction) {
         }
     }
     return null;
+}
+
+function removeChar (item: string, pos: number) {
+    var newItem: string = "";
+    if (pos > 0) {
+        newItem = item.substr(0, pos);
+    }
+    if ( item.length > (pos + 1) ) {
+        newItem += item.substr(pos + 1);
+    }
+    return newItem;
 }

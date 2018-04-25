@@ -966,7 +966,7 @@ class AblDebugSession extends DebugSession {
         }
         if (this.localRoot) {
             remotePath = normalizePath(remotePath);
-            remotePath.replace(this.remoteRoot, '');
+            remotePath = remotePath.replace(this.remoteRoot, '');
             remotePath = path.join(this.localRoot, remotePath);
         }
         return remotePath;

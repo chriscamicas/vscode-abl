@@ -38,8 +38,10 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
 			parameterFiles: oeConfig.parameterFiles,
 			batchMode: true,
 			startupProcedure: path.join(__dirname, '../../abl-src/check-syntax.p'),
-			param: filename
+			param: filename,
+			workspaceRoot: vscode.workspace.rootPath
 		});
+		cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath).replace('${workspaceFolder}', vscode.workspace.rootPath) : cwd;
 		return new Promise<ICheckResult[]>((resolve, reject) => {
 			cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
 				try {

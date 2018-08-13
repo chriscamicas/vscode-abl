@@ -24,6 +24,7 @@ export interface OpenEdgeConfig {
     proPath?: string[];
     proPathMode?: 'append' | 'overwrite' | 'prepend';
     parameterFiles?: string[];
+    workingDirectory?: string;
     test?: TestConfig;
 }
 

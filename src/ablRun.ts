@@ -16,8 +16,10 @@ export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration):
 			parameterFiles: oeConfig.parameterFiles,
 			batchMode: true,
 			startupProcedure: path.join(__dirname, '../../abl-src/run.p'),
-			param: filename
+			param: filename,
+			workspaceRoot: vscode.workspace.rootPath
 		});
+		cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath).replace('${workspaceFolder}', vscode.workspace.rootPath) : cwd;
 		return create(cmd, args, { env: env, cwd: cwd }, outputChannel);
 	});
 }

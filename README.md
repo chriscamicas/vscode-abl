@@ -2,6 +2,9 @@
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## What's new
+* 0.7.5
+    - Fix workspaceRoot on parameterFiles
+    - Optional configuration: workingDirectory
 * 0.7.4
     - Fix multiple syntax highlight issues
 * 0.7.3
@@ -46,6 +49,7 @@ You need to have a local OpenEdge installation, and the `DLC` environment variab
 You can create a local config file for your project named `.openedge.json`, with the following structure:
 ```JSON
 {
+    "workingDirectory": "${workspaceFolder}\\Home",
     "proPath": [
         "c:\\temp",
         "${workspaceFolder}"
@@ -57,7 +61,9 @@ You can create a local config file for your project named `.openedge.json`, with
 }
 ```
 
-`proPath` is optionnal, and the default value is the workspaceRoot (of VSCode).
+`proPath` and `workingDirectory` are optional. Default values:
+- `proPath`: workspaceRoot (of VSCode)
+- `workingDirectory`: folder of active source code
 
 ### Debugger
 You can use the debugger to connect to a remote running process (assuming it is debug-ready), or run locally with debugger.

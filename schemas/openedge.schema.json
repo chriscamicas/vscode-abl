@@ -29,6 +29,11 @@
       "id": "/properties/proPathMode",
       "title": "proPathMode",
       "type": "string"
+    },
+    "workingDirectory": {
+      "id": "/properties/workingDirectory",
+      "description": "Current working directory (home)",
+      "type": "string"
     }
   },
   "type": "object"

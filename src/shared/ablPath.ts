@@ -31,7 +31,7 @@ export function createProArgs(options: ProArgsOptions): string[] {
     if (options.parameterFiles) {
         // pfArgs = openEdgeConfig.parameterFiles.filter(pf => pf.trim().length > 0).map(pf => { return '-pf ' + pf; });
         pfArgs = options.parameterFiles.filter(pf => pf.trim().length > 0).reduce((r, a) => r.concat('-pf', a), []);
-        for(let i=0;i<pfArgs.length;i++){
+        for (let i = 0; i < pfArgs.length; i++) {
             pfArgs[i] = pfArgs[i].replace('${workspaceRoot}', options.workspaceRoot);
         }
     }

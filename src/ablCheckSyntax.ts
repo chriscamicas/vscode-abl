@@ -31,8 +31,8 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
 
 	let cwd = path.dirname(filename);
 
-	let cmd = getProBin();
 	return getOpenEdgeConfig().then(oeConfig => {
+		let cmd = getProBin(oeConfig.dlc);
 		let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
 		let args = createProArgs({
 			parameterFiles: oeConfig.parameterFiles,

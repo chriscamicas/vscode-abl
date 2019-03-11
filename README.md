@@ -2,6 +2,8 @@
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## What's new
+* 0.8
+    - You can now define the dlc value from the config file (optional)
 * 0.7.7
     - Fix syntax highlight issues
 * 0.7.6
@@ -58,6 +60,7 @@ You can create a local config file for your project named `.openedge.json`, with
         "c:\\temp",
         "${workspaceFolder}"
     ],
+    "dlc": "C:/Progress/OpenEdge", //optional override
     "proPathMode": "append", // overwrite, prepend
     "parameterFiles": [ // -pf
         "default.pf"
@@ -65,7 +68,8 @@ You can create a local config file for your project named `.openedge.json`, with
 }
 ```
 
-`proPath` and `workingDirectory` are optional. Default values:
+`dlc`, `proPath` and `workingDirectory` are optional. Default values:
+- `dlc`: uses environment variable $DLC
 - `proPath`: workspaceRoot (of VSCode)
 - `workingDirectory`: folder of active source code
 

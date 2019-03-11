@@ -21,6 +21,7 @@ export interface Command {
     cwd?: string;
 }
 export interface OpenEdgeConfig {
+    dlc?: string;
     proPath?: string[];
     proPathMode?: 'append' | 'overwrite' | 'prepend';
     parameterFiles?: string[];

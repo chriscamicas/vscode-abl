@@ -334,7 +334,6 @@ class AblDebugSession extends DebugSession {
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
         verbose('LaunchRequest');
 
-        let cmd = getProBin();
 
         let filename = args.program;
         let cwd = args.cwd || path.dirname(filename);
@@ -342,6 +341,7 @@ class AblDebugSession extends DebugSession {
         args.port = args.port || DEFAULT_DEBUG_PORT;
 
         loadConfigFile(path.join(args.cwd, OPENEDGE_CONFIG_FILENAME)).then(oeConfig => {
+            let cmd = getProBin(oeConfig.dlc);
             let env = setupEnvironmentVariables(process.env, oeConfig, cwd);
             env.VSABL_STARTUP_PROGRAM = filename;
             let proArgs = createProArgs({

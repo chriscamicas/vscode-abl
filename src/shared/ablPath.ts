@@ -2,18 +2,19 @@ import * as path from 'path';
 import { OpenEdgeConfig } from './openEdgeConfigFile';
 import * as fs from 'fs';
 
-export function getBinPath(toolName: string) {
-    return path.join(process.env['DLC'], 'bin', toolName);
+export function getBinPath(toolName: string, dlcPath?: string) {
+    let dlc = dlcPath || process.env['DLC'];
+    return path.join(dlc, 'bin', toolName);
 }
 
-export function getProBin() {
-    return getBinPath('_progres');
+export function getProBin(dlcPath?: string) {
+    return getBinPath('_progres', dlcPath);
 }
 
-export function getProwinBin() {
-    let prowin = getBinPath('prowin.exe');
+export function getProwinBin(dlcPath?: string) {
+    let prowin = getBinPath('prowin.exe', dlcPath);
     if (!fs.existsSync(prowin))
-        prowin = getBinPath('prowin32.exe');
+        prowin = getBinPath('prowin32.exe', dlcPath);
     return prowin;
 }
 export interface ProArgsOptions {

@@ -10,6 +10,11 @@
       },
       "type": "array"
     },
+    "dlc": {
+      "id": "/properties/dlc",
+      "description": "Path to Progress OpenEdge installation (if not set use ENVVAR $DLC)",
+      "type": "string"
+    },
     "proPath": {
       "id": "/properties/proPath",
       "description": "Path to include in the PROPATH variable",

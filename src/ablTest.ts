@@ -32,8 +32,8 @@ export function ablTest(filename: string, ablConfig: vscode.WorkspaceConfigurati
 	// let cwd = path.dirname(filename);
 	let cwd = vscode.workspace.rootPath;
 
-	let cmd = getProBin();
 	return getOpenEdgeConfig().then(oeConfig => {
+		let cmd = getProBin(oeConfig.dlc);
 		outputChannel.clear();
 		outputChannel.show(true);
 

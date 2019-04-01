@@ -20,7 +20,7 @@ steps:
     npm run lint
   displayName: 'checking lint'
 
-- script: |
-    npm install
-    npm run test
-  displayName: 'running tests'
+# - script: |
+#     npm install
+#     npm run test
+#   displayName: 'running tests'

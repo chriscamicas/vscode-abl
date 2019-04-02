@@ -17,11 +17,6 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 
                 let parse_status = new ParseStatus();
 
-                let parse_mode = PARSE_INSTRUCTION;
-                let parse_depth = 0;
-
-                let comment_depth = 0;
-
                 for (let i = 0; i < document.lineCount; i++) {
                     let line = document.lineAt(i);
                     let comp = line.text.toLowerCase().trim();
@@ -99,7 +94,6 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
                                 } else {
                                     // Enter Comment mode
                                     parse_status.parse_mode = PARSE_COMMENT;
-                                    parse_depth = 1;
                                     parse_status.parse_string = parse_status.parse_string.substr(mode_change + 2);
                                     parse_status = parseForCommentEnd(parse_status);
                                 }

@@ -13,14 +13,23 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
         Thenable<vscode.SymbolInformation[]> {
 
             return new Promise((resolve, reject) => {
-                let symbols = [];
+				// this stores all the symbols we create
+				let symbols = [];
 
                 let parse_status = new ParseStatus();
 
+				// Parse the document, line by line
                 for (let i = 0; i < document.lineCount; i++) {
-                    let line = document.lineAt(i);
+					// read a line
+					let line = document.lineAt(i);
+					/*
+					 * ABL is case-insensitive, TS is not;
+					 * make our life easier by coverting string to lowercase
+					 * remove whitespaces as well
+					 */
                     let comp = line.text.toLowerCase().trim();
 
+					// set parse status
                     parse_status.parse_string = comp;
                     parse_status.instruction_string = parse_status.instruction_string.trim();
                     if (parse_status.instruction_string.length === 0) {
@@ -61,12 +70,12 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
                     // double tilde for tilde
                     parse_status.parse_string = parse_status.parse_string.replace('~~', '~');
 
-                    // already in comment mode
+                    // If we are in comment mode, check for comment end
                     if (parse_status.parse_mode === PARSE_COMMENT) {
                         parse_status = parseForCommentEnd(parse_status);
                     }
 
-                    // already in string mode
+                    // If we are in string mode, check for string end
                     if (parse_status.parse_mode === PARSE_STRING) {
                         parse_status = parseForStringEnd(parse_status);
                     }
@@ -121,15 +130,16 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
                         } else {
                             // command parse
                             resultSymbol = parseInstruction(comp);
-                        }
-                            if (resultSymbol != null ) {
-                                let pUri = document.uri;
-                                let pLoc = new vscode.Location(document.uri, document.lineAt(parse_status.instruction_start_line).range);
-                                let pSymbol = new vscode.SymbolInformation(resultSymbol.name, resultSymbol.kind, '', pLoc);
-                                symbols.push(pSymbol);
-                            }
+						}
 
-                        // }
+						// found something, create a symbol for it
+                        if (resultSymbol != null ) {
+                            // let pUri = document.uri;
+							let pLoc = new vscode.Location(document.uri, document.lineAt(parse_status.instruction_start_line).range);
+                			let pSymbol = new vscode.SymbolInformation(resultSymbol.name, resultSymbol.kind, '', pLoc);
+                			symbols.push(pSymbol);
+                    	}
+
                         // check again for colon (start block) and dot (end of command)
                         i_end = parse_status.instruction_string.search(/:(?=\s|$)|\.(?=\s|$)/);
                     }
@@ -421,15 +431,4 @@ function parseInstruction (pInstruction) {
         }
     }
     return null;
-}
-
-function removeChar (item: string, pos: number) {
-    let newItem: string = '';
-    if (pos > 0) {
-        newItem = item.substr(0, pos);
-    }
-    if ( item.length > (pos + 1) ) {
-        newItem += item.substr(pos + 1);
-    }
-    return newItem;
 }

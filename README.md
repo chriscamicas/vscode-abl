@@ -47,7 +47,7 @@ You can create a local config file for your project named `.openedge.json`, with
 - `proPath`: workspaceRoot (of VSCode)
 - `workingDirectory`: folder of active source code
 
-## Parameter "oeStartupProcedure"
+#### Parameter "oeStartupProcedure"
 The optional Startup Procedure for OpenEdge can be used to execute 4GL code before a check syntax/debug/run operation. Can be used to create Database aliases or instantiate Singleton Classes. The Procedure is executed everytime the IDE starts a check syntax/debug/run operation.
 
 ### Debugger

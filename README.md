@@ -2,38 +2,10 @@
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## What's new
+* 0.9
+    - New definition provider: the outline pane is now filled with the definitions found in the current document
 * 0.8
     - You can now define the dlc value from the config file (optional)
-* 0.7.7
-    - Fix syntax highlight issues
-* 0.7.6
-    - Fix syntax highlight issues
-* 0.7.5
-    - Fix workspaceRoot on parameterFiles
-    - Optional configuration: workingDirectory
-* 0.7.4
-    - Fix multiple syntax highlight issues
-* 0.7.3
-    - Fix remote/local path mapping while remote debugging
-* 0.7.2
-    - Fix syntax highlight issue #11
-* 0.7.1
-    - Fix syntax highlight issue chriscamicas/abl-tmlanguage#2
-* 0.7
-    - Fix syntax highlight issue #9
-    - Migrate to DebugConfigurationProvider #10
-    - Integration with ABLUnit Test framework
-* 0.6.4
-    - Highlight for (scoped|global)-define and analyze-(suspend|resume)
-* 0.6.3
-    - Fix syntax highlight issue #6
-* 0.6.2
-    - Fix .openedge.json won't load
-* 0.6.1
-    - Fix debugger launch failed
-* 0.6.0
-    - Integrated ABL debugger
-    - Fix minor syntax highlighting flaw
 
 ## Features
 
@@ -138,6 +110,8 @@ Based upon the ABLUnit framework (need to be installed locally), you can specify
 ## Greetings
 Largely inspired by ZaphyrVonGenevese work (https://github.com/ZaphyrVonGenevese/vscode-abl).
 Also inspired by vscode-go and vscode-rust extensions.
+
+Thanks to all the contributors: mscheblein
 
 ## License
 Licensed under the [MIT](LICENSE) License.

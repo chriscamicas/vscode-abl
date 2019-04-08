@@ -27,6 +27,7 @@ export interface OpenEdgeConfig {
     parameterFiles?: string[];
     workingDirectory?: string;
     test?: TestConfig;
+    startupProcedure?: string;
 }
 
 export function loadConfigFile(filename: string): Thenable<OpenEdgeConfig> {

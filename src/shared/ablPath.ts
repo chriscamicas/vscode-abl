@@ -82,8 +82,8 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
             env.VSABL_PROPATH_MODE = 'append';
         }
 
-        if (openEdgeConfig.oeStartupProcedure) {
-            env.VSABL_OE_STARTUP_PROCEDURE = openEdgeConfig.oeStartupProcedure.replace('${workspaceRoot}', workspaceRoot).replace('${workspaceFolder}', workspaceRoot);
+        if (openEdgeConfig.startupProcedure) {
+            env.VSABL_OE_STARTUP_PROCEDURE = openEdgeConfig.startupProcedure.replace('${workspaceRoot}', workspaceRoot).replace('${workspaceFolder}', workspaceRoot);
         } else {
             // unset var; required in case user changes config
             env.VSABL_OE_STARTUP_PROCEDURE = '';

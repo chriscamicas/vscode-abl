@@ -37,17 +37,17 @@ You can create a local config file for your project named `.openedge.json`, with
     "parameterFiles": [ // -pf
         "default.pf"
     ],
-    "oeStartupProcedure" : "${workspaceFolder}/vsc-oe-startup.p"
+    "startupProcedure" : "${workspaceFolder}/vsc-oe-startup.p"
 }
 ```
 
-`dlc`, `oeStartupProcedure`, `proPath` and `workingDirectory` are optional. Default values:
+`dlc`, `startupProcedure`, `proPath` and `workingDirectory` are optional. Default values:
 - `dlc`: uses environment variable $DLC
-- `oeStartupProcedure`: ''
+- `startupProcedure`: ''
 - `proPath`: workspaceRoot (of VSCode)
 - `workingDirectory`: folder of active source code
 
-#### Parameter "oeStartupProcedure"
+#### Parameter "startupProcedure"
 The optional Startup Procedure for OpenEdge can be used to execute 4GL code before a check syntax/debug/run operation. Can be used to create Database aliases or instantiate Singleton Classes. The Procedure is executed everytime the IDE starts a check syntax/debug/run operation.
 
 ### Debugger

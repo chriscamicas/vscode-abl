@@ -40,8 +40,8 @@
       "description": "Current working directory (home)",
       "type": "string"
     },
-    "oeStartupProcedure": {
-      "id": "/properties/oeStartupProcedure",
+    "startupProcedure": {
+      "id": "/properties/startupProcedure",
       "description": "Path to OpenEdge Startup Procedure",
       "type": "string"
     }

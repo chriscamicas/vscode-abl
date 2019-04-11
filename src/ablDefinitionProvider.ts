@@ -254,17 +254,20 @@ function parseBlock (pBlock: String) {
     switch (words[0]) {
         case 'case':
         case 'catch':
-        case 'destructor':
+        case 'def':
+        case 'define':
         case 'do':
         case 'else': // may precede a block
         case 'finally':
         case 'for':
         case 'get':
         case 'if': // if statements may precede a block
-        case 'interface':
-        case 'method':
+        // case 'interface':
         case 'on': // on statements may precede a block
         case 'otherwise': // may precede a block
+        case 'private':
+        case 'protected':
+        case 'public':
         case 'repeat':
         case 'set':
         case 'triggers':
@@ -277,15 +280,25 @@ function parseBlock (pBlock: String) {
                 kind: vscode.SymbolKind.Class
             };
         case 'constructor':
+            // check for keywords that may precede the name
+            let iC = 1;
             if (words[1] === 'private' || words[1] === 'public' || words[1] === 'protected' || words[1] === 'static') {
-                return {
-                    name: words[2],
-                    kind: vscode.SymbolKind.Constructor
-                };
+                iC++;
             }
             return {
-                name: words[1],
+                name: RemoveBracketFromName(words[iC]),
                 kind: vscode.SymbolKind.Constructor
+            };
+        case 'destructor':
+            // check for keywords that may precede the name
+            let iD = 1;
+            if (words[1] === 'public') {
+                iD++;
+            }
+            return {
+                name: RemoveBracketFromName(words[iD]),
+                // No Destructor Type in SymbolKind, return Method
+                kind: vscode.SymbolKind.Method
             };
         case 'enum':
             return {
@@ -294,15 +307,36 @@ function parseBlock (pBlock: String) {
             };
         case 'function':
         case 'procedure':
+            // No Procedure Type in SymbolKind, return Function
             return {
                 name: words[1],
                 kind: vscode.SymbolKind.Function
             };
-        case 'method':
+        case 'interface':
             return {
-                name: words[0],
-                kind: vscode.SymbolKind.Method
+                name: words[1],
+                kind: vscode.SymbolKind.Interface
             };
+        case 'method':
+            // We want the Name of the Method, so check for various keywords
+            let iM = 1;
+            while (words[iM]) {
+                if (words[iM] === 'private' || words[iM] === 'public' || words[iM] === 'protected' || words[iM] === 'static'
+                    || words[iM] === 'abstract' || words[iM] === 'override' || words[iM] === 'final') {
+                    iM++;
+                } else {
+                    // iM should now be the return type, increase by one to get the name
+                    iM++;
+                    break;
+                }
+            }
+            if (words[iM]) {
+                return {
+                    name: RemoveBracketFromName(words[iM]),
+                    kind: vscode.SymbolKind.Method
+                };
+            }
+            return null;
         // must be a label
         default:
             return {
@@ -431,4 +465,10 @@ function parseInstruction (pInstruction) {
         }
     }
     return null;
+}
+
+// Helper Function to Remove Brackets from names, Example: "Func(input)" -> "Func"
+function RemoveBracketFromName(pName: String): String {
+    let rName = pName.split('(', 1);
+    return rName[0];
 }

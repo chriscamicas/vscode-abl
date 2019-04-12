@@ -62,7 +62,8 @@ function ParseType2ItemKind (pType: vscode.SymbolKind): vscode.CompletionItemKin
         case vscode.SymbolKind.Interface:
             return vscode.CompletionItemKind.Interface;
         // case vscode.SymbolKind.Key:
-        // case vscode.SymbolKind.Object:
+        case vscode.SymbolKind.Object:
+            return vscode.CompletionItemKind.Variable;
         case vscode.SymbolKind.EnumMember:
             return vscode.CompletionItemKind.EnumMember;
         case vscode.SymbolKind.Event:

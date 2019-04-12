@@ -19,13 +19,17 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
             throw 'Operation cancelllation';
         }
 
-        // read a line, remove whitespaces
-        let comp = document.lineAt(i).text.trim();
+        /*
+         * read a line, remove whitespaces
+         * add a space at line-end so parser doesnt concat multiline stuff into one word
+         * like ELSE<LINE-BREAK>DO -> ELSEDO
+         */
+        let comp = document.lineAt(i).text.trim() + ' ';
 
         // set parse status
         parse_status.parse_string = comp;
-        parse_status.instruction_string = parse_status.instruction_string.trim();
-        if (parse_status.instruction_string.length === 0) {
+        // parse_status.instruction_string = parse_status.instruction_string.trim();
+        if (parse_status.instruction_string.trim().length === 0) {
             parse_status.instruction_start_line = i;
         }
 

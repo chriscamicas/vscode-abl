@@ -132,14 +132,8 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
                 resultSymbol = parseInstruction(comp);
             }
 
-            // found something, create a symbol for it
+            // found something, add the line number
             if (resultSymbol != null ) {
-                // let pUri = document.uri;
-                /*
-                let pLoc = new vscode.Location(document.uri, document.lineAt(parse_status.instruction_start_line).range);
-                let pSymbol = new vscode.SymbolInformation(resultSymbol.Name, resultSymbol.Type, '', pLoc);
-                symbols.push(pSymbol);
-                */
                 resultSymbol.Line = parse_status.instruction_start_line;
                 symbols.push(resultSymbol);
             }
@@ -280,7 +274,6 @@ function parseBlock (pBlock: string): ParseItem {
         case 'for':
         case 'get':
         case 'if': // if statements may precede a block
-        // case 'interface':
         case 'on': // on statements may precede a block
         case 'otherwise': // may precede a block
         case 'private':

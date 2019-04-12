@@ -16,7 +16,6 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
 
         // Cancel this on Request
         if (token.isCancellationRequested) {
-            console.log('cancelMe');
             throw 'Operation cancelllation';
         }
 
@@ -179,7 +178,7 @@ export class ParseItem {
 }
 
 // Search for Comment End
-function parseForCommentEnd (pStatus: ParseStatus) {
+function parseForCommentEnd (pStatus: ParseStatus): ParseStatus {
     // check start comment
     let comment_start = 0;
     comment: while (comment_start >= 0) {
@@ -213,7 +212,7 @@ function parseForCommentEnd (pStatus: ParseStatus) {
 }
 
 // Search for String End
-function parseForStringEnd (pStatus: ParseStatus) {
+function parseForStringEnd (pStatus: ParseStatus): ParseStatus {
 
     let end_quote = -1;
     if (pStatus.string_quote === '\'') {

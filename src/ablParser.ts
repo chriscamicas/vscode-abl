@@ -20,14 +20,8 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
             throw 'Operation cancelllation';
         }
 
-        // read a line
-        let line = document.lineAt(i);
-        /*
-         * ABL is case-insensitive, TS is not;
-         * make our life easier by coverting string to lowercase
-         * remove whitespaces as well
-         */
-        let comp = line.text.toLowerCase().trim();
+        // read a line, remove whitespaces
+        let comp = document.lineAt(i).text.trim();
 
         // set parse status
         parse_status.parse_string = comp;
@@ -37,7 +31,7 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
         }
 
         // tilde bullshit (see abl documentation)
-        // todo: need to evaluate all tildes before we do anything else
+        // we need to evaluate all tildes before we do anything else
         let tildePos = 0;
 
         // stuff escaped by tilde
@@ -263,7 +257,8 @@ function parseBlock (pBlock: string): ParseItem {
         return null;
     }
     // is this a label or a block
-    switch (words[0]) {
+    // ABL is case-insensitive, TS is not; make our life easier by coverting string to lowercase
+    switch (words[0].toLowerCase()) {
         case 'case':
         case 'catch':
         case 'def':
@@ -290,14 +285,16 @@ function parseBlock (pBlock: string): ParseItem {
         case 'constructor':
             // check for keywords that may precede the name
             let iC = 1;
-            if (words[1] === 'private' || words[1] === 'public' || words[1] === 'protected' || words[1] === 'static') {
+            let wC = words[1].toLowerCase();
+            if (wC === 'private' || wC === 'public' || wC === 'protected' || wC === 'static') {
                 iC++;
             }
             return new ParseItem(RemoveBracketFromName(words[iC]), vscode.SymbolKind.Constructor);
         case 'destructor':
             // check for keywords that may precede the name
             let iD = 1;
-            if (words[1] === 'public') {
+            let wD = words[1].toLowerCase();
+            if (wD === 'public') {
                 iD++;
             }
             // No Destructor Type in SymbolKind, return Method
@@ -314,8 +311,9 @@ function parseBlock (pBlock: string): ParseItem {
             // We want the Name of the Method, so check for various keywords
             let iM = 1;
             while (words[iM]) {
-                if (words[iM] === 'private' || words[iM] === 'public' || words[iM] === 'protected' || words[iM] === 'static'
-                    || words[iM] === 'abstract' || words[iM] === 'override' || words[iM] === 'final') {
+                let wM = words[iM].toLowerCase();
+                if (wM === 'private' || wM === 'public' || wM === 'protected' || wM === 'static'
+                    || wM === 'abstract' || wM === 'override' || wM === 'final') {
                     iM++;
                 } else {
                     // iM should now be the return type, increase by one to get the name
@@ -336,7 +334,8 @@ function parseBlock (pBlock: string): ParseItem {
 
 // create symbol for instruction
 function parseInstruction (pInstruction: string): ParseItem {
-    if (pInstruction.startsWith('def')) {
+    // ABL is case-insensitive, TS is not; make our life easier by coverting string to lowercase
+    if (pInstruction.substr(0, 3).toLowerCase().startsWith('def')) {
         let words = pInstruction.split(/\s+/);
 
         /*
@@ -345,7 +344,8 @@ function parseInstruction (pInstruction: string): ParseItem {
          * this will be followed by the name
          */
         buffer: for (let i = 1; i < words.length; i++) {
-            switch (words[i]) {
+            // ABL is case-insensitive, TS is not; make our life easier by coverting string to lowercase
+            switch ( words[i].toLowerCase() ) {
                 // reserverd words that might show up in a definition
                 case 'new':
                 case 'global':

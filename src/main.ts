@@ -6,6 +6,7 @@ import { openDataDictionary } from './ablDataDictionary';
 import { AblDebugConfigurationProvider } from './debugAdapter/ablDebugConfigurationProvider';
 import { ABL_MODE } from './ablMode';
 import { AblDocumentSymbolProvider } from './ablDefinitionProvider';
+import { AblCompletionItemProvider } from './ablCompletionProvider';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
 let warningDiagnosticCollection: vscode.DiagnosticCollection;
@@ -71,12 +72,15 @@ export function activate(ctx: vscode.ExtensionContext): void {
     warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-warning');
     ctx.subscriptions.push(warningDiagnosticCollection);
 
-    // Document Symbol Provider
+    // Document Symbol Provider, provides Symbols for the Outliner
     ctx.subscriptions.push(
         vscode.languages.registerDocumentSymbolProvider(
             ABL_MODE, new AblDocumentSymbolProvider()));
 
-
+    // Completion Provider, provides elements for Code completion
+    ctx.subscriptions.push(
+        vscode.languages.registerCompletionItemProvider(
+            ABL_MODE, new AblCompletionItemProvider(), '.', '\"'));
 }
 
 function deactivate() {

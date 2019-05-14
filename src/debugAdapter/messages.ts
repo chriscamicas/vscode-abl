@@ -42,18 +42,18 @@ export function convertDataToDebuggerMessage(data: any): DebugMessage[] {
             if (msgCode === 'MSG_LISTING') {
                 args = msg.split(';').filter((p) => p.length > 0);
                 const msgConverted: DebugMessageListing = {
-                    code: msgCode,
                     args: [],
-                    breakpointCount: parseInt(args[4]),
-                    file: args[0],
-                    stoppedAtLine: parseInt(args[5]),
+                    breakpointCount: parseInt(args[4], 10),
                     breakpoints: [],
+                    code: msgCode,
+                    file: args[0],
+                    stoppedAtLine: parseInt(args[5], 10),
                 };
 
                 for (let bpIdx = 0; bpIdx < msgConverted.breakpointCount; bpIdx++) {
                     msgConverted.breakpoints.push({
-                        line: args[6 + bpIdx * 2],
                         id: args[6 + (bpIdx * 2) + 1],
+                        line: args[6 + bpIdx * 2],
                     });
                 }
                 return msgConverted;
@@ -61,9 +61,9 @@ export function convertDataToDebuggerMessage(data: any): DebugMessage[] {
                 msg = msg.replace(/\n/g, '');
                 args = msg.split(';').filter((p) => p.length > 0);
                 const msgConverted: DebugMessageClassInfo = {
-                    code: msgCode,
                     args: [],
                     baseClass: args[3] === 'Y' ? args[4] : null,
+                    code: msgCode,
                     properties: [],
                 };
                 args = args.slice(5);
@@ -89,34 +89,34 @@ export function convertDataToDebuggerMessage(data: any): DebugMessage[] {
                 const parts1 = msg.split('\n').filter((p) => p.length > 0);
                 args = parts1.map((p) => p.split(';')).filter((p) => p.length > 0);
                 const msgConverted: DebugMessageVariables = {
-                    code: msgCode,
                     args: [],
+                    code: msgCode,
                     variables: [],
                 };
                 msgConverted.variables = args.map((p) => {
                     if (p[2] !== '?') { // if not empty, it's a class
                         return {
+                            children: [],
+                            kind: AblDebugKind.Class,
                             name: p[0],
                             type: p[2],
-                            kind: AblDebugKind.Class,
                             value: p[6],
-                            children: [],
                         };
                     } else if (p[4] !== '0') { // if > 0 this is an Extent (Array)
                         return {
+                            children: [],
+                            kind: AblDebugKind.Array,
                             name: p[0],
                             type: p[1],
-                            kind: AblDebugKind.Array,
                             value: p[6],
-                            children: [],
                         };
                     } else {
                         return {
+                            children: [],
+                            kind: AblDebugKind.Variable,
                             name: p[0],
                             type: p[1],
-                            kind: AblDebugKind.Variable,
                             value: p[6],
-                            children: [],
                         };
                     }
                 });
@@ -127,8 +127,8 @@ export function convertDataToDebuggerMessage(data: any): DebugMessage[] {
                     return (index + 1) % 3 === 0;
                 }).map((v) => v.replace(/\u0012/g, ''));
                 const msgConverted: DebugMessageArray = {
-                    code: msgCode,
                     args: [],
+                    code: msgCode,
                     values: args as string[],
                 };
                 return msgConverted;
@@ -136,8 +136,8 @@ export function convertDataToDebuggerMessage(data: any): DebugMessage[] {
                 const parts1 = msg.split('\n').filter((p) => p.length > 0);
                 args = parts1.map((p) => p.split(';')).filter((p) => p.length > 0);
                 const msgConverted: DebugMessageVariables = {
-                    code: msgCode,
                     args: [],
+                    code: msgCode,
                     variables: [],
                 };
                 msgConverted.variables = args.map((p) => {
@@ -150,11 +150,11 @@ export function convertDataToDebuggerMessage(data: any): DebugMessage[] {
                         displayName = '\u2194' + displayName;
                     }
                     return {
+                        children: [],
+                        kind: AblDebugKind.Parameter,
                         name: displayName,
                         type: p[2],
-                        kind: AblDebugKind.Parameter,
                         value: p[5],
-                        children: [],
                     };
                 });
                 return msgConverted;

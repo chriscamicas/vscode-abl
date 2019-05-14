@@ -1,9 +1,4 @@
-/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
-
-'use strict';
-
+// tslint:disable: object-literal-sort-keys
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import { dirname, isAbsolute, join } from 'path';
@@ -12,8 +7,10 @@ import * as vscode from 'vscode';
 export class AblDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
 
     /**
-	 * Returns an initial debug configuration based on contextual information, e.g. package.json or folder.
-	 */
+     * Returns an initial debug configuration based on contextual information, e.g. package.json or folder.
+     * @param folder
+     * @param token
+     */
     public provideDebugConfigurations(folder: vscode.WorkspaceFolder | undefined, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.DebugConfiguration[]> {
 
         return [

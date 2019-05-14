@@ -9,22 +9,22 @@ export class AblCompletionItemProvider implements vscode.CompletionItemProvider 
         return new Promise((resolve, reject) => {
             try {
                 // console.log('my Message: ' + position.line + ', ' + position.character );
-                let IsProp: boolean = false;
-                const CIResult: vscode.CompletionItem[] = [];
+                let isAProperty: boolean = false;
+                const completionItemResult: vscode.CompletionItem[] = [];
 
                 // Are we supposed to complete Object related stuff?
-                const CompleteLine = document.lineAt( position.line );
+                const completeLine = document.lineAt( position.line );
                 if (position.character > 0) { // ensure that we dont end up with a negative number
-                    if (CompleteLine.text.substr(position.character - 1, 1) === '.') {
-                        IsProp = true;
+                    if (completeLine.text.substr(position.character - 1, 1) === '.') {
+                        isAProperty = true;
                     }
                 }
 
                 // Parse the Document for possible values
-                const Symbols: ParseItem[] = ParseDocument(document, token);
-                SymbolLoop: for (let i = 0; i < Symbols.length; i++) {
-                    if (IsProp) {
-                        switch (Symbols[i].Type) {
+                const symbols: ParseItem[] = ParseDocument(document, token);
+                SymbolLoop: for (let i = 0; i < symbols.length; i++) {
+                    if (isAProperty) {
+                        switch (symbols[i].type) {
                             case vscode.SymbolKind.Constructor:
                             case vscode.SymbolKind.Interface:
                             case vscode.SymbolKind.Method:
@@ -36,9 +36,11 @@ export class AblCompletionItemProvider implements vscode.CompletionItemProvider 
                                 continue SymbolLoop;
                         }
                     }
-                    CIResult.push( new vscode.CompletionItem(Symbols[i].Name, ParseType2ItemKind(Symbols[i].Type)) );
+                    completionItemResult.push(
+                        new vscode.CompletionItem(symbols[i].name, ParseType2ItemKind(symbols[i].type)),
+                    );
                 }
-                resolve(CIResult);
+                resolve(completionItemResult);
             } catch {
                 reject();
             }

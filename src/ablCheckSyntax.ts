@@ -16,7 +16,7 @@ export function removeTestStatus(e: vscode.TextDocumentChangeEvent) {
     statusBarItem.text = '';
 }
 
-export interface ICheckResult {
+export interface CheckResult {
     file: string;
     line: number;
     column: number;
@@ -24,7 +24,7 @@ export interface ICheckResult {
     severity: string;
 }
 
-export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<ICheckResult[]> {
+export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<CheckResult[]> {
     outputChannel.clear();
     statusBarItem.show();
     statusBarItem.text = 'Checking syntax';
@@ -35,20 +35,23 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
         const cmd = getProBin(oeConfig.dlc);
         const env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
         const args = createProArgs({
-            parameterFiles: oeConfig.parameterFiles,
             batchMode: true,
-            startupProcedure: path.join(__dirname, '../../abl-src/check-syntax.p'),
             param: filename,
+            parameterFiles: oeConfig.parameterFiles,
+            startupProcedure: path.join(__dirname, '../../abl-src/check-syntax.p'),
             workspaceRoot: vscode.workspace.rootPath,
         });
-        cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath).replace('${workspaceFolder}', vscode.workspace.rootPath) : cwd;
-        return new Promise<ICheckResult[]>((resolve, reject) => {
+        if (oeConfig.workingDirectory) {
+            cwd = oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath)
+                                           .replace('${workspaceFolder}', vscode.workspace.rootPath);
+        }
+        return new Promise<CheckResult[]>((resolve, reject) => {
             cp.execFile(cmd, args, { env, cwd }, (err, stdout, stderr) => {
                 try {
                     if (err && (err as any).code === 'ENOENT') {
                         // Since the tool is run on save which can be frequent
                         // we avoid sending explicit notification if tool is missing
-                        console.log(`Cannot find ${cmd}`);
+                        // console.log(`Cannot find ${cmd}`);
                         return resolve([]);
                     }
                     const useStdErr = false; // todo voir si utile
@@ -62,7 +65,7 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
                         resolve([]);
                         return;
                     }
-                    const results: ICheckResult[] = [];
+                    const results: CheckResult[] = [];
 
                     // Format = &1 File:'&2' Row:&3 Col:&4 Error:&5 Message:&6
                     const re = /(ERROR|WARNING) File:'(.*)' Row:(\d+) Col:(\d+) Error:(.*) Message:(.*)/;
@@ -71,9 +74,9 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
 
                         if (matches) {
                             const checkResult = {
+                                column: parseInt(matches[4], 10),
                                 file: matches[2],
-                                line: parseInt(matches[3]),
-                                column: parseInt(matches[4]),
+                                line: parseInt(matches[3], 10),
                                 msg: `${matches[5]}: ${matches[6]}`,
                                 severity: matches[1].toLowerCase(),
                             };
@@ -91,8 +94,7 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
         }).then((results) => {
             if (results.length === 0) {
                 statusBarItem.text = 'Syntax OK';
-            }
-            else {
+            } else {
                 statusBarItem.text = 'Syntax error';
             }
             return results;

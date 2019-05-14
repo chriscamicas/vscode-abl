@@ -3,20 +3,14 @@ import * as vscode from 'vscode';
 import { convertDataToDebuggerMessage } from '../src/debugAdapter/messages';
 
 suite('OpenEdge ABL Extension Tests', () => {
-    suiteSetup(() => {
-    });
-
-    suiteTeardown(() => {
-    });
-
     test('Test MSG_CLASSINFO Processing', (done) => {
         const msgRaw = `MSG_CLASSINFO;1;ablRunner;Progress.Lang.Object;N;NULL;P;Next-Sibling;Progress.Lang.Object;1;R;1008  (Class OpenEdge.ABLUnit.Model.TestRootModel);P;Prev-Sibling;Progress.Lang.Object;1;R;1006  (Class OpenEdge.ABLUnit.Runner.TestConfig);`;
         const msg = convertDataToDebuggerMessage(msgRaw);
         assert.deepEqual(msg, [
             {
-                code: 'MSG_CLASSINFO',
                 args: [],
                 baseClass: null,
+                code: 'MSG_CLASSINFO',
                 properties: [{
                     children: [],
                     kind: 7,
@@ -39,8 +33,8 @@ suite('OpenEdge ABL Extension Tests', () => {
         const msg = convertDataToDebuggerMessage(msgRaw);
         assert.deepEqual(msg, [
             {
-                code: 'MSG_ARRAY',
                 args: [],
+                code: 'MSG_ARRAY',
                 values: [
                     '2""',
                     '2""',

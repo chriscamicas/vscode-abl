@@ -98,20 +98,21 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
     return env;
 }
 
-export function expandPathVariables(path: string, env: any, variables: {[key: string]: string}): string {
+export function expandPathVariables(pathToExpand: string, env: any, variables: {[key: string]: string}): string {
     // format VSCode ${env:VAR}
     // path = path.replace(/\${env:([^}]+)}/g, (_, n) => {
     //     return env[n];
     // });
 
     // format DOS %VAR%
-    path = path.replace(/%([^%]+)%/g, (_, n) => {
+    let expandedPath = pathToExpand;
+    expandedPath = expandedPath.replace(/%([^%]+)%/g, (_, n) => {
         return env[n];
     });
 
     // VSCode specific var ${workspaceFolder}
-    path = path.replace(/\${([^}]+)}/g, (_, n) => {
+    expandedPath = expandedPath.replace(/\${([^}]+)}/g, (_, n) => {
         return variables[n];
     });
-    return path;
+    return expandedPath;
 }

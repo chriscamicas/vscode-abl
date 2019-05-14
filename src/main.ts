@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { checkSyntax, ICheckResult, removeTestStatus } from './ablCheckSyntax';
+import { CheckResult, checkSyntax, removeTestStatus } from './ablCheckSyntax';
 import { AblCompletionItemProvider } from './ablCompletionProvider';
 import { openDataDictionary } from './ablDataDictionary';
 import { AblDocumentSymbolProvider } from './ablDefinitionProvider';
@@ -57,6 +57,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
                 return;
             }
 
+            // tslint:disable: object-literal-sort-keys
             config = Object.assign(config, {
                 name: 'Attach',
                 type: 'abl',
@@ -83,6 +84,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 }
 
 function deactivate() {
+    // no need for deactivation yet
 }
 
 function runBuilds(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration) {
@@ -113,14 +115,15 @@ function runBuilds(document: vscode.TextDocument, ablConfig: vscode.WorkspaceCon
             if (error.line === 0) {
                 vscode.window.showErrorMessage(error.msg);
             } else {
+                let range;
                 if (document && document.uri.toString() === canonicalFile) {
-                    const range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
+                    range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
                     const text = document.getText(range);
                     const [_, leading, trailing] = /^(\s*).*(\s*)$/.exec(text);
                     startColumn = startColumn + leading.length;
                     endColumn = text.length - trailing.length;
                 }
-                const range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
+                range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
                 const severity = mapSeverityToVSCodeSeverity(error.severity);
                 const diagnostic = new vscode.Diagnostic(range, error.msg, severity);
                 let diagnostics = diagnosticMap.get(canonicalFile);

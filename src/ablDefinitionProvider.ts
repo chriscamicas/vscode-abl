@@ -10,15 +10,16 @@ export class AblDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 
         return new Promise((resolve, reject) => {
             try {
-                const SResult: vscode.SymbolInformation[] = [];
+                const symbolInformationResult: vscode.SymbolInformation[] = [];
 
                 // Parse the Document for possible values
-                const Symbols: ParseItem[] = ParseDocument(document, token);
-                for (let i = 0; i < Symbols.length; i++) {
-                    const pLoc = new vscode.Location(document.uri, document.lineAt(Symbols[i].Line).range);
-                    SResult.push( new vscode.SymbolInformation(Symbols[i].Name, Symbols[i].Type, '', pLoc) );
+                const symbols: ParseItem[] = ParseDocument(document, token);
+                for (let i = 0; i < symbols.length; i++) {
+                    const pLoc = new vscode.Location(document.uri, document.lineAt(symbols[i].line).range);
+                    const symbolInformation = new vscode.SymbolInformation(symbols[i].name, symbols[i].type, '', pLoc);
+                    symbolInformationResult.push(symbolInformation);
                 }
-                resolve(SResult);
+                resolve(symbolInformationResult);
             } catch {
                 reject();
             }

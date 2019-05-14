@@ -200,13 +200,13 @@ export class AblDebugger {
         return this.sendMessageWithResponse<DebugMessageArray>(`GET-ARRAY ${arrayName}`, 'MSG_ARRAY');
     }
 
-    public sendMessageWithResponse<T>(msg: string, respCode: string, respCodeError?: string): Promise<T> {
+    public sendMessageWithResponse<T>(messageToSend: string, respCode: string, respCodeError?: string): Promise<T> {
         return new Promise((resolve, reject) => {
             let response = null;
 
             const self = this;
-            const respCallback = function(data) {
-                response = convertDataToDebuggerMessage(data).filter((msg) => msg.code === respCode || (respCodeError && (msg.code === respCodeError)));
+            const respCallback = (data) => {
+                response = convertDataToDebuggerMessage(data).filter((message) => message.code === respCode || (respCodeError && (message.code === respCodeError)));
                 if (response.length > 0) {
                     if (response[0].code === respCode) {
                         resolve(response[0]);
@@ -216,7 +216,7 @@ export class AblDebugger {
                     self.recvSocket.removeListener('data', respCallback);
                 }
             };
-            this.sendMessage(msg);
+            this.sendMessage(messageToSend);
             this.recvSocket.on('data', respCallback);
 
             setTimeout(() => {
@@ -230,9 +230,10 @@ export class AblDebugger {
     }
 }
 
+// tslint:disable-next-line: max-classes-per-file
 class AblDebugSession extends DebugSession {
 
-    private _variableHandles: Handles<DebugVariable>;
+    private variableHandles: Handles<DebugVariable>;
     private breakpoints: Map<string, DebugBreakpoint[]>;
     private watchpointExpressions: Set<string>;
     private threads: Set<number>;
@@ -244,7 +245,7 @@ class AblDebugSession extends DebugSession {
 
     public constructor(debuggerLinesStartAt1: boolean, isServer: boolean = false) {
         super(debuggerLinesStartAt1, isServer);
-        this._variableHandles = new Handles<DebugVariable>();
+        this.variableHandles = new Handles<DebugVariable>();
         this.threads = new Set<number>();
         this.debugState = null;
         this.ablDebugger = null;
@@ -319,7 +320,6 @@ class AblDebugSession extends DebugSession {
 
                 // starting with msg.args[0][4]
                 verbose(`${JSON.stringify(msgListing)}`);
-            } else {
             }
         };
 
@@ -332,6 +332,7 @@ class AblDebugSession extends DebugSession {
             verbose('InitializeEvent');
         });
     }
+
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
         verbose('LaunchRequest');
 
@@ -345,11 +346,11 @@ class AblDebugSession extends DebugSession {
             const env = setupEnvironmentVariables(process.env, oeConfig, cwd);
             env.VSABL_STARTUP_PROGRAM = filename;
             const proArgs = createProArgs({
-                parameterFiles: oeConfig.parameterFiles,
                 batchMode: true,
-                startupProcedure: path.join(__dirname, '../../../abl-src/run-debug.p'),
-                param: args.args ? args.args.join(' ') : '',
                 debugPort: args.port,
+                param: args.args ? args.args.join(' ') : '',
+                parameterFiles: oeConfig.parameterFiles,
+                startupProcedure: path.join(__dirname, '../../../abl-src/run-debug.p'),
             });
 
             // prepareProArguments(path.join(__dirname, '../../abl-src/run-debug.p'), filename, true, true).then(proArgs => {
@@ -368,7 +369,7 @@ class AblDebugSession extends DebugSession {
                 this.sendEvent(new TerminatedEvent());
                 logError('Process exiting with code: ' + code);
             });
-            spawnedProcess.on('error', function(err) {
+            spawnedProcess.on('error', (err) => {
                 logError('Process exiting with code: ' + err);
             });
 
@@ -423,6 +424,7 @@ class AblDebugSession extends DebugSession {
         // verbose('StoppedEvent("breakpoint")');
         this.sendResponse(response);
     }
+
     protected sendBreakpoints(): void {
         let msg;
         if (this.breakpoints.size > 0) {
@@ -461,6 +463,7 @@ class AblDebugSession extends DebugSession {
 
         this.ablDebugger.sendMessage(msg);
     }
+
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
         verbose('SetBreakPointsRequest');
 
@@ -519,7 +522,7 @@ class AblDebugSession extends DebugSession {
                         filename,
                         localPath,
                     ),
-                    parseInt(location[8]),
+                    parseInt(location[8], 10),
                 );
             });
             stackFrames.reverse();
@@ -547,21 +550,21 @@ class AblDebugSession extends DebugSession {
                     const variables: DebugVariable[] = msgVariables.variables;
                     const tempTables: DebugVariable[] = msgTempTables.args.map((p) => {
                         return {
+                            children: [],
+                            kind: AblDebugKind.TempTable,
                             name: p[0],
                             type: p[1],
-                            kind: AblDebugKind.TempTable,
                             value: '',
-                            children: [],
                         };
                     });
 
                     const scopes = new Array<Scope>();
-                    scopes.push(new Scope('Local', this._variableHandles.create({
+                    scopes.push(new Scope('Local', this.variableHandles.create({
+                        children: parameters.concat(variables).concat(tempTables),
+                        kind: 0,
                         name: 'Local',
                         type: '',
-                        kind: 0,
                         value: '',
-                        children: parameters.concat(variables).concat(tempTables),
                     }), false));
                     // scopes.push(new Scope('Parameters', this._variableHandles.create({
                     //     name: 'Parameters',
@@ -595,99 +598,9 @@ class AblDebugSession extends DebugSession {
         });
     }
 
-    private convertDebugVariableToProtocolVariable(v: DebugVariable, i: number): { result: string; variablesReference: number; } {
-        // if (v.kind === GoReflectKind.UnsafePointer) {
-        // 	return {
-        // 		result: `unsafe.Pointer(0x${v.children[0].addr.toString(16)})`,
-        // 		variablesReference: 0
-        // 	};
-        // } else if (v.kind === GoReflectKind.Ptr) {
-        // 	if (v.children[0].addr === 0) {
-        // 		return {
-        // 			result: 'nil <' + v.type + '>',
-        // 			variablesReference: 0
-        // 		};
-        // 	} else if (v.children[0].type === 'void') {
-        // 		return {
-        // 			result: 'void',
-        // 			variablesReference: 0
-        // 		};
-        // 	} else {
-        // 		return {
-        // 			result: '<' + v.type + '>',
-        // 			variablesReference: v.children[0].children.length > 0 ? this._variableHandles.create(v.children[0]) : 0
-        // 		};
-        // 	}
-        // } else if (v.kind === GoReflectKind.Slice) {
-        // 	return {
-        // 		result: '<' + v.type + '> (length: ' + v.len + ', cap: ' + v.cap + ')',
-        // 		variablesReference: this._variableHandles.create(v)
-        // 	};
-        // } else if (v.kind === GoReflectKind.Array) {
-        // 	return {
-        // 		result: '<' + v.type + '>',
-        // 		variablesReference: this._variableHandles.create(v)
-        // 	};
-        // } else if (v.kind === GoReflectKind.String) {
-        // 	let val = v.value;
-        // 	if (v.value && v.value.length < v.len) {
-        // 		val += `...+${v.len - v.value.length} more`;
-        // 	}
-        // 	return {
-        // 		result: v.unreadable ? ('<' + v.unreadable + '>') : ('"' + val + '"'),
-        // 		variablesReference: 0
-        // 	};
-        // } else {
-        // 	return {
-        // 		result: v.value || ('<' + v.type + '>'),
-        // 		variablesReference: v.children.length > 0 ? this._variableHandles.create(v) : 0
-        // 	};
-        // }
-        // if (v.kind === AblReflectKind.Variable && v.type === 'CHARACTER') {
-        if (v.kind === AblDebugKind.Array) {
-            return {
-                result: v.type + v.value,
-                variablesReference: this._variableHandles.create(v),
-            };
-        } else if (v.kind === AblDebugKind.TempTable) {
-            return {
-                result: '<' + v.type + '>',
-                variablesReference: this._variableHandles.create(v),
-            };
-        } else if (v.kind === AblDebugKind.Class || v.kind === AblDebugKind.BaseClass) {
-            if (v.value !== '?') {
-                return {
-                    result: v.value,
-                    variablesReference: this._variableHandles.create(v),
-                };
-            }
-            return {
-                result: v.value,
-                variablesReference: 0,
-            };
-        } else if (v.type === 'CHARACTER' || v.type === 'LONGCHAR') {
-            // let val = v.value.replace(/\n/g, '');
-            let val = v.value;
-            const quoteIdx = val.indexOf('"');
-            if (quoteIdx > 0) {
-                // let length = parseInt(val.substring(0, quoteIdx));
-                val = val.substr(quoteIdx);
-            }
-            return {
-                result: val,
-                variablesReference: 0,
-            };
-        } else {
-            return {
-                result: v.value || ('<' + v.type + '>'),
-                variablesReference: v.children.length > 0 ? this._variableHandles.create(v) : 0,
-            };
-        }
-    }
-
     protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): void {
         verbose('VariablesRequest');
-        const vari = this._variableHandles.get(args.variablesReference);
+        const vari = this.variableHandles.get(args.variablesReference);
         let variables;
         if (vari.kind === AblDebugKind.TempTable) {
 
@@ -695,11 +608,11 @@ class AblDebugSession extends DebugSession {
                 const fields = msgFields.args.slice(1);
                 variables = fields.map((f) => {
                     return {
+                        children: [],
+                        kind: AblDebugKind.Variable,
                         name: f[0],
                         type: f[1],
-                        kind: AblDebugKind.Variable,
                         value: f[3],
-                        children: [],
                     };
                 }).map((f, i) => {
                     const { result, variablesReference } = this.convertDebugVariableToProtocolVariable(f, i);
@@ -719,7 +632,7 @@ class AblDebugSession extends DebugSession {
             let parentRef = vari.parentReference;
             // We should find the full path to the property ex: 'class1:propertyA:propertyB'
             while (parentRef) {
-                const parentVar = this._variableHandles.get(parentRef);
+                const parentVar = this.variableHandles.get(parentRef);
                 if (parentVar) {
                     if (parentVar.kind === AblDebugKind.Class) {
                         classInfoName = parentVar.name + ':' + classInfoName;
@@ -735,11 +648,11 @@ class AblDebugSession extends DebugSession {
                 if (baseClass) {
                     const varBaseClass: DebugVariable = {
                         children: [],
-                        name: '<base>',
                         kind: AblDebugKind.BaseClass,
+                        name: '<base>',
+                        parentReference: args.variablesReference,
                         type: baseClass,
                         value: baseClass,
-                        parentReference: args.variablesReference,
                     };
                     fields.unshift(varBaseClass);
                 }
@@ -772,8 +685,8 @@ class AblDebugSession extends DebugSession {
                             children: [],
                             kind: AblDebugKind.Variable,
                             name: `${i + 1}`, // ABL array indice starts at 1
-                            value: v,
                             type: vari.type,
+                            value: v,
                         };
                         const { result, variablesReference } = this.convertDebugVariableToProtocolVariable(debugVariable, i);
                         return {
@@ -798,7 +711,7 @@ class AblDebugSession extends DebugSession {
             let parentRef = vari.parentReference;
             // We should find the full path to the property ex: 'class1:propertyA:propertyB'
             while (parentRef) {
-                const parentVar = this._variableHandles.get(parentRef);
+                const parentVar = this.variableHandles.get(parentRef);
                 if (parentVar) {
                     if (parentVar.kind !== AblDebugKind.BaseClass) {
                         if (classInfoName !== '') {
@@ -817,11 +730,11 @@ class AblDebugSession extends DebugSession {
                 if (baseClass) {
                     const varBaseClass: DebugVariable = {
                         children: [],
-                        name: '<base>',
                         kind: AblDebugKind.BaseClass,
+                        name: '<base>',
+                        parentReference: args.variablesReference,
                         type: baseClass,
                         value: baseClass,
-                        parentReference: args.variablesReference,
                     };
                     fields.unshift(varBaseClass);
                 }
@@ -936,8 +849,8 @@ class AblDebugSession extends DebugSession {
                 });
                 if (watchpoint) {
                     const variable: DebugVariable = {
-                        kind: AblDebugKind.Variable,
                         children: [],
+                        kind: AblDebugKind.Variable,
                         name: watchpoint[1],
                         type: watchpoint[2],
                         value: watchpoint[5],
@@ -971,12 +884,103 @@ class AblDebugSession extends DebugSession {
         }
         return remotePath;
     }
+
     protected convertLocalPathToRemote(localPath: string): string {
         if (this.localRoot) {
             localPath = normalizePath(localPath);
             localPath = localPath.replace(this.localRoot, this.remoteRoot);
         }
         return localPath;
+    }
+
+    private convertDebugVariableToProtocolVariable(v: DebugVariable, i: number): { result: string; variablesReference: number; } {
+        // if (v.kind === GoReflectKind.UnsafePointer) {
+        // 	return {
+        // 		result: `unsafe.Pointer(0x${v.children[0].addr.toString(16)})`,
+        // 		variablesReference: 0
+        // 	};
+        // } else if (v.kind === GoReflectKind.Ptr) {
+        // 	if (v.children[0].addr === 0) {
+        // 		return {
+        // 			result: 'nil <' + v.type + '>',
+        // 			variablesReference: 0
+        // 		};
+        // 	} else if (v.children[0].type === 'void') {
+        // 		return {
+        // 			result: 'void',
+        // 			variablesReference: 0
+        // 		};
+        // 	} else {
+        // 		return {
+        // 			result: '<' + v.type + '>',
+        // 			variablesReference: v.children[0].children.length > 0 ? this._variableHandles.create(v.children[0]) : 0
+        // 		};
+        // 	}
+        // } else if (v.kind === GoReflectKind.Slice) {
+        // 	return {
+        // 		result: '<' + v.type + '> (length: ' + v.len + ', cap: ' + v.cap + ')',
+        // 		variablesReference: this._variableHandles.create(v)
+        // 	};
+        // } else if (v.kind === GoReflectKind.Array) {
+        // 	return {
+        // 		result: '<' + v.type + '>',
+        // 		variablesReference: this._variableHandles.create(v)
+        // 	};
+        // } else if (v.kind === GoReflectKind.String) {
+        // 	let val = v.value;
+        // 	if (v.value && v.value.length < v.len) {
+        // 		val += `...+${v.len - v.value.length} more`;
+        // 	}
+        // 	return {
+        // 		result: v.unreadable ? ('<' + v.unreadable + '>') : ('"' + val + '"'),
+        // 		variablesReference: 0
+        // 	};
+        // } else {
+        // 	return {
+        // 		result: v.value || ('<' + v.type + '>'),
+        // 		variablesReference: v.children.length > 0 ? this._variableHandles.create(v) : 0
+        // 	};
+        // }
+        // if (v.kind === AblReflectKind.Variable && v.type === 'CHARACTER') {
+        if (v.kind === AblDebugKind.Array) {
+            return {
+                result: v.type + v.value,
+                variablesReference: this.variableHandles.create(v),
+            };
+        } else if (v.kind === AblDebugKind.TempTable) {
+            return {
+                result: '<' + v.type + '>',
+                variablesReference: this.variableHandles.create(v),
+            };
+        } else if (v.kind === AblDebugKind.Class || v.kind === AblDebugKind.BaseClass) {
+            if (v.value !== '?') {
+                return {
+                    result: v.value,
+                    variablesReference: this.variableHandles.create(v),
+                };
+            }
+            return {
+                result: v.value,
+                variablesReference: 0,
+            };
+        } else if (v.type === 'CHARACTER' || v.type === 'LONGCHAR') {
+            // let val = v.value.replace(/\n/g, '');
+            let val = v.value;
+            const quoteIdx = val.indexOf('"');
+            if (quoteIdx > 0) {
+                // let length = parseInt(val.substring(0, quoteIdx));
+                val = val.substr(quoteIdx);
+            }
+            return {
+                result: val,
+                variablesReference: 0,
+            };
+        } else {
+            return {
+                result: v.value || ('<' + v.type + '>'),
+                variablesReference: v.children.length > 0 ? this.variableHandles.create(v) : 0,
+            };
+        }
     }
 }
 

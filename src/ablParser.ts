@@ -9,7 +9,7 @@ export function ParseDocument(document: vscode.TextDocument, token: vscode.Cance
     // this stores all the symbols we create
     const symbols: ParseItem[] = [];
 
-    let parse_status = new ParseStatus();
+    let parseStatus = new ParseStatus();
 
     // Parse the document, line by line
     for (let i = 0; i < document.lineCount; i++) {
@@ -27,10 +27,10 @@ export function ParseDocument(document: vscode.TextDocument, token: vscode.Cance
         let comp = document.lineAt(i).text.trim() + ' ';
 
         // set parse status
-        parse_status.parse_string = comp;
+        parseStatus.parseString = comp;
         // parse_status.instruction_string = parse_status.instruction_string.trim();
-        if (parse_status.instruction_string.trim().length === 0) {
-            parse_status.instruction_start_line = i;
+        if (parseStatus.instructionString.trim().length === 0) {
+            parseStatus.instructionStartLine = i;
         }
 
         // tilde bullshit (see abl documentation)
@@ -38,90 +38,90 @@ export function ParseDocument(document: vscode.TextDocument, token: vscode.Cance
         let tildePos = 0;
 
         // stuff escaped by tilde
-        parse_status.parse_string = parse_status.parse_string.replace('~\'', '\'\'');
-        parse_status.parse_string = parse_status.parse_string.replace('~"', '""');
-        parse_status.parse_string = parse_status.parse_string.replace('~\\', '\\');
-        parse_status.parse_string = parse_status.parse_string.replace('~{', '{');
+        parseStatus.parseString = parseStatus.parseString.replace('~\'', '\'\'');
+        parseStatus.parseString = parseStatus.parseString.replace('~"', '""');
+        parseStatus.parseString = parseStatus.parseString.replace('~\\', '\\');
+        parseStatus.parseString = parseStatus.parseString.replace('~{', '{');
         // replace special chars with blank, we dont evaluate them anyway
-        parse_status.parse_string = parse_status.parse_string.replace('~t', ' ');
-        parse_status.parse_string = parse_status.parse_string.replace('~r', ' ');
-        parse_status.parse_string = parse_status.parse_string.replace('~n', ' ');
-        parse_status.parse_string = parse_status.parse_string.replace('~E', ' ');
-        parse_status.parse_string = parse_status.parse_string.replace('~b', ' ');
-        parse_status.parse_string = parse_status.parse_string.replace('~f', ' ');
+        parseStatus.parseString = parseStatus.parseString.replace('~t', ' ');
+        parseStatus.parseString = parseStatus.parseString.replace('~r', ' ');
+        parseStatus.parseString = parseStatus.parseString.replace('~n', ' ');
+        parseStatus.parseString = parseStatus.parseString.replace('~E', ' ');
+        parseStatus.parseString = parseStatus.parseString.replace('~b', ' ');
+        parseStatus.parseString = parseStatus.parseString.replace('~f', ' ');
 
         // check octal char
         tildeCheck: while (true) {
-            tildePos = parse_status.parse_string.search(/~[0-3][0-7][0-7]/);
+            tildePos = parseStatus.parseString.search(/~[0-3][0-7][0-7]/);
             // no tilde found
             if (tildePos < 0) {
                 break tildeCheck;
             }
-            const replaceMe = parse_status.parse_string.substr(tildePos, 4);
-            parse_status.parse_string = parse_status.parse_string.replace(replaceMe, ' ');
+            const replaceMe = parseStatus.parseString.substr(tildePos, 4);
+            parseStatus.parseString = parseStatus.parseString.replace(replaceMe, ' ');
         }
 
         // remove single tilde
-        parse_status.parse_string = parse_status.parse_string.replace(/~(?!~)/, ' ');
+        parseStatus.parseString = parseStatus.parseString.replace(/~(?!~)/, ' ');
 
         // double tilde for tilde
-        parse_status.parse_string = parse_status.parse_string.replace('~~', '~');
+        parseStatus.parseString = parseStatus.parseString.replace('~~', '~');
 
         // If we are in comment mode, check for comment end
-        if (parse_status.parse_mode === PARSE_COMMENT) {
-            parse_status = parseForCommentEnd(parse_status);
+        if (parseStatus.parseMode === PARSE_COMMENT) {
+            parseStatus = parseForCommentEnd(parseStatus);
         }
 
         // If we are in string mode, check for string end
-        if (parse_status.parse_mode === PARSE_STRING) {
-            parse_status = parseForStringEnd(parse_status);
+        if (parseStatus.parseMode === PARSE_STRING) {
+            parseStatus = parseForStringEnd(parseStatus);
         }
 
         // check for mode_change
-        mcc: while (parse_status.parse_string.length > 0) {
-            const mode_change = parse_status.parse_string.search(/"|'|\/\/|\/\*/);
-            if (mode_change >= 0) {
-                const first_char = parse_status.parse_string.substr(mode_change, 1);
+        mcc: while (parseStatus.parseString.length > 0) {
+            const modeChange = parseStatus.parseString.search(/"|'|\/\/|\/\*/);
+            if (modeChange >= 0) {
+                const firstChar = parseStatus.parseString.substr(modeChange, 1);
                 // remember parseable part
-                if (mode_change > 0) {
-                    parse_status.instruction_string += parse_status.parse_string.substring(0, mode_change);
+                if (modeChange > 0) {
+                    parseStatus.instructionString += parseStatus.parseString.substring(0, modeChange);
                 }
-                if (first_char === '"' || first_char === '\'') {
+                if (firstChar === '"' || firstChar === '\'') {
                     // Enter String Mode
-                    parse_status.parse_mode = PARSE_STRING;
-                    parse_status.string_quote = first_char;
-                    parse_status.parse_string = parse_status.parse_string.substr(mode_change + 1);
-                    parse_status = parseForStringEnd(parse_status);
+                    parseStatus.parseMode = PARSE_STRING;
+                    parseStatus.stringQuote = firstChar;
+                    parseStatus.parseString = parseStatus.parseString.substr(modeChange + 1);
+                    parseStatus = parseForStringEnd(parseStatus);
                 } else {
-                    const second_char = parse_status.parse_string.substr(mode_change + 1, 1);
-                    if (second_char === '/') {
+                    const secondChar = parseStatus.parseString.substr(modeChange + 1, 1);
+                    if (secondChar === '/') {
                         // Line Comment
-                        parse_status.parse_string = '';
+                        parseStatus.parseString = '';
                     } else {
                         // Enter Comment mode
-                        parse_status.parse_mode = PARSE_COMMENT;
-                        parse_status.parse_string = parse_status.parse_string.substr(mode_change + 2);
-                        parse_status = parseForCommentEnd(parse_status);
+                        parseStatus.parseMode = PARSE_COMMENT;
+                        parseStatus.parseString = parseStatus.parseString.substr(modeChange + 2);
+                        parseStatus = parseForCommentEnd(parseStatus);
                     }
                 }
             } else {
                 break mcc;
             }
         }
-        parse_status.instruction_string += parse_status.parse_string;
+        parseStatus.instructionString += parseStatus.parseString;
 
         /*
          * check for colon (start block) and dot (end of command)
          * must be followed by white-space or line-end otherwise its something else
          */
-        let i_end = parse_status.instruction_string.search(/:(?=\s|$)|\.(?=\s|$)/);
-        while (i_end >= 0) {
-            const end_char = parse_status.instruction_string.substr(i_end, 1);
-            comp = parse_status.instruction_string.substring(0, i_end).trim();
-            parse_status.instruction_string = parse_status.instruction_string.substr(i_end + 1);
+        let iEnd = parseStatus.instructionString.search(/:(?=\s|$)|\.(?=\s|$)/);
+        while (iEnd >= 0) {
+            const endChar = parseStatus.instructionString.substr(iEnd, 1);
+            comp = parseStatus.instructionString.substring(0, iEnd).trim();
+            parseStatus.instructionString = parseStatus.instructionString.substr(iEnd + 1);
 
             let resultSymbol: ParseItem;
-            if (end_char === ':') {
+            if (endChar === ':') {
                 // block parse
                 resultSymbol = parseBlock(comp);
             } else {
@@ -131,12 +131,12 @@ export function ParseDocument(document: vscode.TextDocument, token: vscode.Cance
 
             // found something, add the line number
             if (resultSymbol != null ) {
-                resultSymbol.Line = parse_status.instruction_start_line;
+                resultSymbol.line = parseStatus.instructionStartLine;
                 symbols.push(resultSymbol);
             }
 
             // check again for colon (start block) and dot (end of command)
-            i_end = parse_status.instruction_string.search(/:(?=\s|$)|\.(?=\s|$)/);
+            iEnd = parseStatus.instructionString.search(/:(?=\s|$)|\.(?=\s|$)/);
         }
     }
 
@@ -145,70 +145,71 @@ export function ParseDocument(document: vscode.TextDocument, token: vscode.Cance
 
 // store information about the parse state
 class ParseStatus {
-    public parse_mode: number;
-    public parse_depth: number;
-    public parse_string: string;
+    public parseMode: number;
+    public parseDepth: number;
+    public parseString: string;
 
-    public string_quote: string;
+    public stringQuote: string;
 
-    public instruction_string: string;
-    public instruction_start_line: number;
+    public instructionString: string;
+    public instructionStartLine: number;
 
     constructor() {
-        this.parse_mode = PARSE_INSTRUCTION;
-        this.parse_depth = 0;
-        this.parse_string = '';
-        this.string_quote = '';
-        this.instruction_string = '';
-        this.instruction_start_line = 0;
+        this.parseMode = PARSE_INSTRUCTION;
+        this.parseDepth = 0;
+        this.parseString = '';
+        this.stringQuote = '';
+        this.instructionString = '';
+        this.instructionStartLine = 0;
     }
 }
 
 // Store Information about the Parsed Object
+// tslint:disable-next-line: max-classes-per-file
 export class ParseItem {
-    public Name: string;
-    public Line: number;
-    public Type: vscode.SymbolKind;
+    public name: string;
+    public line: number;
+    public type: vscode.SymbolKind;
 
     constructor(pName: string, pType?: vscode.SymbolKind) {
-        if (typeof pType === undefined ) {
-            this.Type = vscode.SymbolKind.Object;
+        if (typeof pType === 'undefined' ) {
+            this.type = vscode.SymbolKind.Object;
         } else {
-            this.Type = pType;
+            this.type = pType;
         }
-        this.Name = pName;
-        this.Line = null;
+        this.name = pName;
+        this.line = null;
     }
 }
 
 // Search for Comment End
 function parseForCommentEnd(pStatus: ParseStatus): ParseStatus {
     // check start comment
-    let comment_start = 0;
-    comment: while (comment_start >= 0) {
+    let commentStart = 0;
+    comment: while (commentStart >= 0) {
         // check comment
-        comment_start = pStatus.parse_string.search(/\/\*|\*\//);
+        commentStart = pStatus.parseString.search(/\/\*|\*\//);
 
         // line inside a comment, ignore
-        if (comment_start === -1) {
-            pStatus.parse_string = '';
+        if (commentStart === -1) {
+            pStatus.parseString = '';
             break comment;
         }
 
         // set new comment depth level
-        const comment_type = pStatus.parse_string.substr(comment_start, 2);
-        if (comment_type === '/*') {
-            pStatus.parse_depth++;
+        const commentType = pStatus.parseString.substr(commentStart, 2);
+        if (commentType === '/*') {
+            pStatus.parseDepth++;
         } else {
-            pStatus.parse_depth--;
+            pStatus.parseDepth--;
         }
 
         // adjust parse string
-        pStatus.parse_string = pStatus.parse_string.substr(comment_start + 2);
+        pStatus.parseString = pStatus.parseString.substr(commentStart + 2);
 
         // comment is over, return
-        if (pStatus.parse_depth <= 0) {
-            pStatus.parse_mode = PARSE_INSTRUCTION;
+        if (pStatus.parseDepth <= 0) {
+            pStatus.parseMode = PARSE_INSTRUCTION;
             break comment;
         }
     }
@@ -218,26 +219,26 @@ function parseForCommentEnd(pStatus: ParseStatus): ParseStatus {
 // Search for String End
 function parseForStringEnd(pStatus: ParseStatus): ParseStatus {
 
-    let end_quote = -1;
-    if (pStatus.string_quote === '\'') {
-        end_quote = pStatus.parse_string.search(/'/);
+    let endQuote = -1;
+    if (pStatus.stringQuote === '\'') {
+        endQuote = pStatus.parseString.search(/'/);
     } else {
-        end_quote = pStatus.parse_string.search(/"/);
+        endQuote = pStatus.parseString.search(/"/);
     }
 
     // End Quote found
-    if (end_quote >= 0) {
+    if (endQuote >= 0) {
         // DoubleQuote
-        if (pStatus.parse_string.substr(end_quote + 1, 1) === pStatus.string_quote) {
-            pStatus.parse_string = pStatus.parse_string.substr(end_quote + 2);
+        if (pStatus.parseString.substr(endQuote + 1, 1) === pStatus.stringQuote) {
+            pStatus.parseString = pStatus.parseString.substr(endQuote + 2);
             return parseForStringEnd(pStatus);
         }
-        pStatus.parse_string = pStatus.parse_string.substr(end_quote + 1);
-        pStatus.string_quote = '';
-        pStatus.parse_mode = PARSE_INSTRUCTION;
+        pStatus.parseString = pStatus.parseString.substr(endQuote + 1);
+        pStatus.stringQuote = '';
+        pStatus.parseMode = PARSE_INSTRUCTION;
     } else {
         // line inside a string, ignore
-        pStatus.parse_string = '';
+        pStatus.parseString = '';
     }
 
     return pStatus;

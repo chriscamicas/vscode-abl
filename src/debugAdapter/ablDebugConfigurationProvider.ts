@@ -15,6 +15,11 @@ export class AblDebugConfigurationProvider implements vscode.DebugConfigurationP
 
         return [
             {
+                name: 'Launch',
+                type: 'abl',
+                request: 'launch',
+                program: '${file}',
+            }, {
                 name: 'Attach',
                 type: 'abl',
                 request: 'attach',
@@ -33,12 +38,10 @@ export class AblDebugConfigurationProvider implements vscode.DebugConfigurationP
             }
 
             return {
-                name: 'Attach',
+                name: 'Launch',
                 type: 'abl',
-                request: 'attach',
-                port: 3099,
-                address: '127.0.0.1',
-                localRoot: '${workspaceFolder}',
+                request: 'launch',
+                program: '${file}',
             };
         }
         return debugConfiguration;

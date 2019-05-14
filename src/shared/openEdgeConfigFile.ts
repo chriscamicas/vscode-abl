@@ -37,5 +37,12 @@ export function loadConfigFile(filename: string): Thenable<OpenEdgeConfig> {
     return readFileAsync(filename, { encoding: 'utf8' }).then((text) => {
         // We don't catch the parsing error, to send the error in the UI (via promise rejection)
         return JSON.parse(jsonminify(text));
+    }).catch((e) => {
+        // if no .openedge.json file is found, return a default empty one, no error
+        if (e.code === 'ENOENT') {
+            return {};
+        }
+        // other error (like parsing error) should be thrown
+        throw e;
     });
 }

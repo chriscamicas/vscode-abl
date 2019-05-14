@@ -338,10 +338,11 @@ class AblDebugSession extends DebugSession {
 
         const filename = args.program;
         const cwd = args.cwd || path.dirname(filename);
-        this.localRoot = normalizePath(args.cwd);
+        this.localRoot = normalizePath(cwd);
         args.port = args.port || DEFAULT_DEBUG_PORT;
 
-        loadConfigFile(path.join(args.cwd, OPENEDGE_CONFIG_FILENAME)).then((oeConfig) => {
+        const configFileName = path.join(cwd, OPENEDGE_CONFIG_FILENAME);
+        loadConfigFile(configFileName).then((oeConfig) => {
             const cmd = getProBin(oeConfig.dlc);
             const env = setupEnvironmentVariables(process.env, oeConfig, cwd);
             env.VSABL_STARTUP_PROGRAM = filename;
@@ -396,7 +397,10 @@ class AblDebugSession extends DebugSession {
                 this.sendErrorResponse(response, 3000, 'Failed to continue: "{e}"', { e: err.toString() });
             });
         }, (err) => {
-            this.sendErrorResponse(response, 3000, 'Failed to load config file: "{e}"', { e: err.toString() });
+            this.sendErrorResponse(response, 3000, 'Failed to load config file {f}: "{e}"', {
+                e: err.toString(),
+                f: configFileName,
+            });
         });
     }
 
@@ -877,7 +881,7 @@ class AblDebugSession extends DebugSession {
                 return remotePath;
             }
         }
-        if (this.localRoot) {
+        if (this.localRoot && this.remoteRoot) {
             remotePath = normalizePath(remotePath);
             remotePath = remotePath.replace(this.remoteRoot, '');
             remotePath = path.join(this.localRoot, remotePath);
@@ -886,7 +890,7 @@ class AblDebugSession extends DebugSession {
     }
 
     protected convertLocalPathToRemote(localPath: string): string {
-        if (this.localRoot) {
+        if (this.localRoot && this.remoteRoot) {
             localPath = normalizePath(localPath);
             localPath = localPath.replace(this.localRoot, this.remoteRoot);
         }

@@ -13,7 +13,7 @@ export class AblCompletionItemProvider implements vscode.CompletionItemProvider 
                 const completionItemResult: vscode.CompletionItem[] = [];
 
                 // Are we supposed to complete Object related stuff?
-                const completeLine = document.lineAt( position.line );
+                const completeLine = document.lineAt(position.line);
                 if (position.character > 0) { // ensure that we dont end up with a negative number
                     if (completeLine.text.substr(position.character - 1, 1) === '.') {
                         isAProperty = true;
@@ -22,23 +22,21 @@ export class AblCompletionItemProvider implements vscode.CompletionItemProvider 
 
                 // Parse the Document for possible values
                 const symbols: ParseItem[] = ParseDocument(document, token);
-                SymbolLoop: for (let i = 0; i < symbols.length; i++) {
+                for (const symbol of symbols) {
+                    let addToResult = true;
                     if (isAProperty) {
-                        switch (symbols[i].type) {
-                            case vscode.SymbolKind.Constructor:
-                            case vscode.SymbolKind.Interface:
-                            case vscode.SymbolKind.Method:
-                            case vscode.SymbolKind.Namespace:
-                            case vscode.SymbolKind.Object:
-                            case vscode.SymbolKind.Property:
-                                break;
-                            default:
-                                continue SymbolLoop;
-                        }
+                        addToResult = symbol.type === vscode.SymbolKind.Constructor ||
+                                        symbol.type === vscode.SymbolKind.Interface ||
+                                        symbol.type === vscode.SymbolKind.Method ||
+                                        symbol.type === vscode.SymbolKind.Namespace ||
+                                        symbol.type === vscode.SymbolKind.Object ||
+                                        symbol.type === vscode.SymbolKind.Property;
                     }
-                    completionItemResult.push(
-                        new vscode.CompletionItem(symbols[i].name, ParseType2ItemKind(symbols[i].type)),
-                    );
+                    if (addToResult) {
+                        completionItemResult.push(
+                            new vscode.CompletionItem(symbol.name, ParseType2ItemKind(symbol.type)),
+                        );
+                    }
                 }
                 resolve(completionItemResult);
             } catch {

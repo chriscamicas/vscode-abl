@@ -10,10 +10,10 @@ export class AblCompletionItemProvider implements vscode.CompletionItemProvider 
             try {
                 // console.log('my Message: ' + position.line + ', ' + position.character );
                 let IsProp: boolean = false;
-                let CIResult: Array<vscode.CompletionItem> = [];
+                const CIResult: vscode.CompletionItem[] = [];
 
                 // Are we supposed to complete Object related stuff?
-                let CompleteLine = document.lineAt( position.line );
+                const CompleteLine = document.lineAt( position.line );
                 if (position.character > 0) { // ensure that we dont end up with a negative number
                     if (CompleteLine.text.substr(position.character - 1, 1) === '.') {
                         IsProp = true;
@@ -21,7 +21,7 @@ export class AblCompletionItemProvider implements vscode.CompletionItemProvider 
                 }
 
                 // Parse the Document for possible values
-                let Symbols: Array<ParseItem> = ParseDocument(document, token);
+                const Symbols: ParseItem[] = ParseDocument(document, token);
                 SymbolLoop: for (let i = 0; i < Symbols.length; i++) {
                     if (IsProp) {
                         switch (Symbols[i].Type) {
@@ -47,7 +47,7 @@ export class AblCompletionItemProvider implements vscode.CompletionItemProvider 
 }
 
 // Helper Function, convert ParseItem.Type to vscode.CompletionKind
-function ParseType2ItemKind (pType: vscode.SymbolKind): vscode.CompletionItemKind {
+function ParseType2ItemKind(pType: vscode.SymbolKind): vscode.CompletionItemKind {
     switch (pType) {
         case vscode.SymbolKind.Class:
             return vscode.CompletionItemKind.Class;

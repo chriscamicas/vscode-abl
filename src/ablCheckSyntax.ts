@@ -1,11 +1,11 @@
-import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
-import { outputChannel } from './ablStatus';
+import * as vscode from 'vscode';
 import { getOpenEdgeConfig } from './ablConfig';
-import { getProBin, createProArgs, setupEnvironmentVariables } from './shared/ablPath';
+import { outputChannel } from './ablStatus';
+import { createProArgs, getProBin, setupEnvironmentVariables } from './shared/ablPath';
 
-let statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 // statusBarItem.command = 'abl.checkSyntax.showOutput';
 
 export function removeTestStatus(e: vscode.TextDocumentChangeEvent) {
@@ -31,51 +31,51 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
 
     let cwd = path.dirname(filename);
 
-    return getOpenEdgeConfig().then(oeConfig => {
-        let cmd = getProBin(oeConfig.dlc);
-        let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
-        let args = createProArgs({
+    return getOpenEdgeConfig().then((oeConfig) => {
+        const cmd = getProBin(oeConfig.dlc);
+        const env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
+        const args = createProArgs({
             parameterFiles: oeConfig.parameterFiles,
             batchMode: true,
             startupProcedure: path.join(__dirname, '../../abl-src/check-syntax.p'),
             param: filename,
-            workspaceRoot: vscode.workspace.rootPath
+            workspaceRoot: vscode.workspace.rootPath,
         });
         cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath).replace('${workspaceFolder}', vscode.workspace.rootPath) : cwd;
         return new Promise<ICheckResult[]>((resolve, reject) => {
-            cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
+            cp.execFile(cmd, args, { env, cwd }, (err, stdout, stderr) => {
                 try {
-                    if (err && (<any>err).code === 'ENOENT') {
+                    if (err && (err as any).code === 'ENOENT') {
                         // Since the tool is run on save which can be frequent
                         // we avoid sending explicit notification if tool is missing
                         console.log(`Cannot find ${cmd}`);
                         return resolve([]);
                     }
-                    let useStdErr = false; // todo voir si utile
+                    const useStdErr = false; // todo voir si utile
                     if (err && stderr && !useStdErr) {
                         outputChannel.appendLine(['Error while running tool:', cmd, ...args].join(' '));
                         outputChannel.appendLine(stderr);
                         return resolve([]);
                     }
-                    let lines = stdout.toString().split('\r\n').filter(line => line.length > 0);
+                    const lines = stdout.toString().split('\r\n').filter((line) => line.length > 0);
                     if (lines.length === 1 && lines[0].startsWith('SUCCESS')) {
                         resolve([]);
                         return;
                     }
-                    let results: ICheckResult[] = [];
+                    const results: ICheckResult[] = [];
 
                     // Format = &1 File:'&2' Row:&3 Col:&4 Error:&5 Message:&6
-                    let re = /(ERROR|WARNING) File:'(.*)' Row:(\d+) Col:(\d+) Error:(.*) Message:(.*)/;
-                    lines.forEach(line => {
-                        let matches = line.match(re);
+                    const re = /(ERROR|WARNING) File:'(.*)' Row:(\d+) Col:(\d+) Error:(.*) Message:(.*)/;
+                    lines.forEach((line) => {
+                        const matches = line.match(re);
 
                         if (matches) {
-                            let checkResult = {
+                            const checkResult = {
                                 file: matches[2],
                                 line: parseInt(matches[3]),
                                 column: parseInt(matches[4]),
                                 msg: `${matches[5]}: ${matches[6]}`,
-                                severity: matches[1].toLowerCase()
+                                severity: matches[1].toLowerCase(),
                             };
                             // console.log(`${JSON.stringify(checkResult)}`);
                             results.push(checkResult);
@@ -88,11 +88,13 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
                     reject(e);
                 }
             });
-        }).then(results => {
-            if (results.length === 0)
+        }).then((results) => {
+            if (results.length === 0) {
                 statusBarItem.text = 'Syntax OK';
-            else
+            }
+            else {
                 statusBarItem.text = 'Syntax error';
+            }
             return results;
         });
     });

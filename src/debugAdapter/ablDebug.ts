@@ -1,14 +1,14 @@
-import * as path from 'path';
-import * as os from 'os';
-import { Socket } from 'net';
-import { DebugProtocol } from 'vscode-debugprotocol';
-import { DebugSession, InitializedEvent, TerminatedEvent, BreakpointEvent, ThreadEvent, StoppedEvent, OutputEvent, Thread, StackFrame, Scope, Source, Handles, Breakpoint } from 'vscode-debugadapter';
 import { spawn } from 'child_process';
+import { Socket } from 'net';
+import * as os from 'os';
+import * as path from 'path';
 import * as logger from 'vscode-debug-logger';
+import { Breakpoint, BreakpointEvent, DebugSession, Handles, InitializedEvent, OutputEvent, Scope, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, ThreadEvent } from 'vscode-debugadapter';
+import { DebugProtocol } from 'vscode-debugprotocol';
+import { createProArgs, getProBin, setupEnvironmentVariables } from '../shared/ablPath';
 import { loadConfigFile, OPENEDGE_CONFIG_FILENAME } from '../shared/openEdgeConfigFile';
-import { getProBin, createProArgs, setupEnvironmentVariables } from '../shared/ablPath';
-import { AblDebugKind, DebugVariable, isPrimitiveType } from './variables';
 import { convertDataToDebuggerMessage, DebugMessage, DebugMessageArray, DebugMessageClassInfo, DebugMessageListing, DebugMessageListingBreapoint, DebugMessageVariables } from './messages';
+import { AblDebugKind, DebugVariable, isPrimitiveType } from './variables';
 
 import * as minimatch from 'minimatch';
 // require('console-stamp')(console);
@@ -61,7 +61,7 @@ process.on('uncaughtException', (err: any) => {
 });
 
 function logArgsToString(args: any[]): string {
-    return args.map(arg => {
+    return args.map((arg) => {
         return typeof arg === 'string' ?
             arg :
             JSON.stringify(arg);
@@ -87,16 +87,16 @@ function normalizePath(filePath: string) {
 }
 
 export class AblDebugger {
-    sendSocket: Socket;
-    recvSocket: Socket;
-    connection: Promise<void>;
+    public sendSocket: Socket;
+    public recvSocket: Socket;
+    public connection: Promise<void>;
 
-    msgQueue: string[];
-    onstdout: (str: string) => void;
-    onstderr: (str: string) => void;
-    onClose: () => void;
-    onMessage: (msg: DebugMessage) => void;
-    timeout = 20000;
+    public msgQueue: string[];
+    public onstdout: (str: string) => void;
+    public onstderr: (str: string) => void;
+    public onClose: () => void;
+    public onMessage: (msg: DebugMessage) => void;
+    public timeout = 20000;
 
     constructor(port: number, host: string) {
         this.msgQueue = [];
@@ -133,23 +133,23 @@ export class AblDebugger {
         });
     }
 
-    errorHandler(err: any) {
+    public errorHandler(err: any) {
         log(err);
     }
-    dataHandler(data: any) {
-        if (!this.onMessage) return;
+    public dataHandler(data: any) {
+        if (!this.onMessage) { return; }
 
-        convertDataToDebuggerMessage(data).forEach(msg => {
+        convertDataToDebuggerMessage(data).forEach((msg) => {
             this.onMessage(msg);
         });
     }
 
-    closeHandler() {
+    public closeHandler() {
         log('Connection closed');
         if (this.onClose) { this.onClose(); }
     }
 
-    sendMessage(msg: string) {
+    public sendMessage(msg: string) {
         verbose(`send(${msg})`);
         msg += '\0'; // ending
 
@@ -160,7 +160,7 @@ export class AblDebugger {
         }
     }
 
-    writeMessage(msg: string) {
+    public writeMessage(msg: string) {
         this.sendSocket.write(msg, () => {
             // remove the message we've just sent
             this.msgQueue.shift();
@@ -171,47 +171,48 @@ export class AblDebugger {
         });
     }
 
-    close() {
+    public close() {
         // TODO restore the remote process state, and send 'continue'
         this.sendSocket.destroy();
         this.recvSocket.destroy();
     }
 
-    showStack(): Promise<DebugMessage> {
+    public showStack(): Promise<DebugMessage> {
         return this.sendMessageWithResponse<DebugMessage>('show stack-ide', 'STACK-IDE');
     }
 
-    listVariables(): Promise<DebugMessageVariables> {
+    public listVariables(): Promise<DebugMessageVariables> {
         return this.sendMessageWithResponse<DebugMessageVariables>('list variables', 'MSG_VARIABLES');
     }
-    listParameters(): Promise<DebugMessageVariables> {
+    public listParameters(): Promise<DebugMessageVariables> {
         return this.sendMessageWithResponse<DebugMessageVariables>('list parameters', 'MSG_PARAMETERS');
     }
-    listTempTables(): Promise<DebugMessage> {
+    public listTempTables(): Promise<DebugMessage> {
         return this.sendMessageWithResponse<DebugMessage>('list temp-tables', 'MSG_TEMPTABLES');
     }
-    getFields(tempTableName: string): Promise<DebugMessage> {
+    public getFields(tempTableName: string): Promise<DebugMessage> {
         return this.sendMessageWithResponse(`GET-FIELDS ${tempTableName}`, 'MSG_FIELDS');
     }
-    getClassInfo(className: string): Promise<DebugMessageClassInfo> {
+    public getClassInfo(className: string): Promise<DebugMessageClassInfo> {
         return this.sendMessageWithResponse<DebugMessageClassInfo>(`GET-CLASS-INFO ${className}`, 'MSG_CLASSINFO', 'MSG_CLASSINFO_ERR');
     }
-    getArray(arrayName: string): Promise<DebugMessageArray> {
+    public getArray(arrayName: string): Promise<DebugMessageArray> {
         return this.sendMessageWithResponse<DebugMessageArray>(`GET-ARRAY ${arrayName}`, 'MSG_ARRAY');
     }
 
-    sendMessageWithResponse<T>(msg: string, respCode: string, respCodeError?: string): Promise<T> {
+    public sendMessageWithResponse<T>(msg: string, respCode: string, respCodeError?: string): Promise<T> {
         return new Promise((resolve, reject) => {
             let response = null;
 
             const self = this;
-            let respCallback = function (data) {
-                response = convertDataToDebuggerMessage(data).filter(msg => msg.code === respCode || (respCodeError && (msg.code === respCodeError)));
+            const respCallback = function(data) {
+                response = convertDataToDebuggerMessage(data).filter((msg) => msg.code === respCode || (respCodeError && (msg.code === respCodeError)));
                 if (response.length > 0) {
-                    if (response[0].code === respCode)
+                    if (response[0].code === respCode) {
                         resolve(response[0]);
-                    else
+                    } else {
                         reject(response[0]);
+                    }
                     self.recvSocket.removeListener('data', respCallback);
                 }
             };
@@ -254,7 +255,7 @@ class AblDebugSession extends DebugSession {
         this.sourceMap = {};
 
         const logPath = path.join(os.tmpdir(), 'vscode-abl-debug.txt');
-        logger.init(e => this.sendEvent(e), logPath, isServer);
+        logger.init((e) => this.sendEvent(e), logPath, isServer);
     }
 
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
@@ -273,12 +274,15 @@ class AblDebugSession extends DebugSession {
             args.trace ? logger.LogLevel.Log :
                 logger.LogLevel.Error;
         logger.setMinLogLevel(logLevel);
-        if (args.remoteRoot)
+        if (args.remoteRoot) {
             this.remoteRoot = normalizePath(args.remoteRoot);
-        if (args.localRoot)
+        }
+        if (args.localRoot) {
             this.localRoot = normalizePath(args.localRoot);
-        if (args.sourceMap)
+        }
+        if (args.sourceMap) {
             this.sourceMap = args.sourceMap;
+        }
 
         this.ablDebugger = new AblDebugger(args.port, args.address);
 
@@ -298,16 +302,14 @@ class AblDebugSession extends DebugSession {
             if (msg.code === 'MSG_INFO') {
                 // verbose(`recv(MSG_INFO ${msg.args})`);
                 this.sendEvent(new OutputEvent(msg.args[0].toString()));
-            }
-            else if (msg.code === 'MSG_ENTER') {
+            } else if (msg.code === 'MSG_ENTER') {
                 this.sendEvent(new StoppedEvent('breakpoint', 0));
 
                 // At first stop, the AblDebugger clear its breakpoints, we should re-send them
                 this.sendBreakpoints();
                 verbose('StoppedEvent("breakpoint")');
-            }
-            else if (msg.code === 'MSG_LISTING') {
-                let msgListing = <DebugMessageListing>msg;
+            } else if (msg.code === 'MSG_LISTING') {
+                const msgListing = msg as DebugMessageListing;
                 // TODO send BreakpointEvent with verified breakpoints
                 // is that really needed ???
 
@@ -317,8 +319,7 @@ class AblDebugSession extends DebugSession {
 
                 // starting with msg.args[0][4]
                 verbose(`${JSON.stringify(msgListing)}`);
-            }
-            else {
+            } else {
             }
         };
 
@@ -334,47 +335,46 @@ class AblDebugSession extends DebugSession {
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
         verbose('LaunchRequest');
 
-
-        let filename = args.program;
-        let cwd = args.cwd || path.dirname(filename);
+        const filename = args.program;
+        const cwd = args.cwd || path.dirname(filename);
         this.localRoot = normalizePath(args.cwd);
         args.port = args.port || DEFAULT_DEBUG_PORT;
 
-        loadConfigFile(path.join(args.cwd, OPENEDGE_CONFIG_FILENAME)).then(oeConfig => {
-            let cmd = getProBin(oeConfig.dlc);
-            let env = setupEnvironmentVariables(process.env, oeConfig, cwd);
+        loadConfigFile(path.join(args.cwd, OPENEDGE_CONFIG_FILENAME)).then((oeConfig) => {
+            const cmd = getProBin(oeConfig.dlc);
+            const env = setupEnvironmentVariables(process.env, oeConfig, cwd);
             env.VSABL_STARTUP_PROGRAM = filename;
-            let proArgs = createProArgs({
+            const proArgs = createProArgs({
                 parameterFiles: oeConfig.parameterFiles,
                 batchMode: true,
                 startupProcedure: path.join(__dirname, '../../../abl-src/run-debug.p'),
                 param: args.args ? args.args.join(' ') : '',
-                debugPort: args.port
+                debugPort: args.port,
             });
 
             // prepareProArguments(path.join(__dirname, '../../abl-src/run-debug.p'), filename, true, true).then(proArgs => {
-            let spawnOptions = { env: env, cwd: cwd };
+            const spawnOptions = { env, cwd };
             // spawnOptions.stdio = 'pipe';
             const spawnedProcess = spawn(cmd, proArgs, spawnOptions);
-            spawnedProcess.stderr.on('data', chunk => {
-                let str = chunk.toString();
+            spawnedProcess.stderr.on('data', (chunk) => {
+                const str = chunk.toString();
                 this.sendEvent(new OutputEvent(str, 'stderr'));
             });
-            spawnedProcess.stdout.on('data', chunk => {
-                let str = chunk.toString();
+            spawnedProcess.stdout.on('data', (chunk) => {
+                const str = chunk.toString();
                 this.sendEvent(new OutputEvent(str, 'stdout'));
             });
             spawnedProcess.on('close', (code) => {
                 this.sendEvent(new TerminatedEvent());
                 logError('Process exiting with code: ' + code);
             });
-            spawnedProcess.on('error', function (err) {
+            spawnedProcess.on('error', function(err) {
                 logError('Process exiting with code: ' + err);
             });
 
-            let attachArgs = {
+            const attachArgs = {
                 address: 'localhost',
-                ...args
+                ...args,
             };
             this.initializeDebugger(attachArgs).then(() => {
                 // Send a key, because the spawned process is waiting for the debugger to connect
@@ -391,10 +391,10 @@ class AblDebugSession extends DebugSession {
                 // }
                 this.sendResponse(response);
                 verbose('LaunchResponse');
-            }, err => {
+            }, (err) => {
                 this.sendErrorResponse(response, 3000, 'Failed to continue: "{e}"', { e: err.toString() });
             });
-        }, err => {
+        }, (err) => {
             this.sendErrorResponse(response, 3000, 'Failed to load config file: "{e}"', { e: err.toString() });
         });
     }
@@ -405,7 +405,7 @@ class AblDebugSession extends DebugSession {
         this.initializeDebugger(args).then(() => {
             this.sendResponse(response);
             verbose('AttachResponse');
-        }, err => {
+        }, (err) => {
             this.sendErrorResponse(response, 3000, 'Failed to continue: "{e}"', { e: err.toString() });
         });
     }
@@ -429,7 +429,7 @@ class AblDebugSession extends DebugSession {
             msg = 'break ';
             let bpIdx = 1;
             this.breakpoints.forEach((breakpoints, f) => {
-                breakpoints.forEach(bp => {
+                breakpoints.forEach((bp) => {
                     msg += `B;${bpIdx};E;${bp.file};${bp.line}; ;`;
                     bpIdx += 1;
                 });
@@ -468,18 +468,18 @@ class AblDebugSession extends DebugSession {
 
         // foreach breakpoint : B;1;E;C:/OpenEdge/WRK/testof.p;2; ;
         // let file = normalizePath(args.source.path);
-        let file = this.convertLocalPathToRemote(args.source.path);
+        const file = this.convertLocalPathToRemote(args.source.path);
 
         if (!this.breakpoints.get(file)) {
             this.breakpoints.set(file, []);
         }
         // no need to clear all breakpoints, the 'break' message sends all active breakpoints everytime
         // this.ablDebugger.sendMessage('break;');
-        let breakpoints: DebugBreakpoint[] = args.lines.map(line => {
+        const breakpoints: DebugBreakpoint[] = args.lines.map((line) => {
             return {
-                file: file,
-                line: line,
-                verified: true
+                file,
+                line,
+                verified: true,
             };
         });
         this.breakpoints.set(file, breakpoints);
@@ -500,18 +500,18 @@ class AblDebugSession extends DebugSession {
         //     response.body = { threads: [] };
         //     return this.sendResponse(response);
         // }
-        let threads = [new Thread(0, 'abl-main')];
-        response.body = { threads: threads };
+        const threads = [new Thread(0, 'abl-main')];
+        response.body = { threads };
         this.sendResponse(response);
         verbose('ThreadsResponse', threads);
     }
 
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
         verbose('StackTraceRequest');
-        this.ablDebugger.showStack().then(msg => {
-            let stackFrames = msg.args.map((location, i) => {
-                let filename = path.basename(location[4]);
-                let localPath = this.convertRemotePathToLocal(location[4]);
+        this.ablDebugger.showStack().then((msg) => {
+            const stackFrames = msg.args.map((location, i) => {
+                const filename = path.basename(location[4]);
+                const localPath = this.convertRemotePathToLocal(location[4]);
                 return new StackFrame(
                     i,
                     location[6],
@@ -519,14 +519,14 @@ class AblDebugSession extends DebugSession {
                         filename,
                         localPath,
                     ),
-                    parseInt(location[8])
+                    parseInt(location[8]),
                 );
             });
             stackFrames.reverse();
             response.body = { stackFrames };
             this.sendResponse(response);
             verbose('StackTraceResponse');
-        }).catch(reason => {
+        }).catch((reason) => {
             logError('Failed to produce stack trace!');
             return this.sendErrorResponse(response, 2004, 'Unable to produce stack trace: "{e}"', { e: reason.toString() });
         });
@@ -540,28 +540,28 @@ class AblDebugSession extends DebugSession {
         // list parameters
         // list temp-table
         // list datasets
-        this.ablDebugger.listParameters().then(msgParameters => {
-            this.ablDebugger.listVariables().then(msgVariables => {
-                this.ablDebugger.listTempTables().then(msgTempTables => {
-                    let parameters: DebugVariable[] = msgParameters.variables;
-                    let variables: DebugVariable[] = msgVariables.variables;
-                    let tempTables: DebugVariable[] = msgTempTables.args.map(p => {
+        this.ablDebugger.listParameters().then((msgParameters) => {
+            this.ablDebugger.listVariables().then((msgVariables) => {
+                this.ablDebugger.listTempTables().then((msgTempTables) => {
+                    const parameters: DebugVariable[] = msgParameters.variables;
+                    const variables: DebugVariable[] = msgVariables.variables;
+                    const tempTables: DebugVariable[] = msgTempTables.args.map((p) => {
                         return {
                             name: p[0],
                             type: p[1],
                             kind: AblDebugKind.TempTable,
                             value: '',
-                            children: []
+                            children: [],
                         };
                     });
 
-                    let scopes = new Array<Scope>();
+                    const scopes = new Array<Scope>();
                     scopes.push(new Scope('Local', this._variableHandles.create({
                         name: 'Local',
                         type: '',
                         kind: 0,
                         value: '',
-                        children: parameters.concat(variables).concat(tempTables)
+                        children: parameters.concat(variables).concat(tempTables),
                     }), false));
                     // scopes.push(new Scope('Parameters', this._variableHandles.create({
                     //     name: 'Parameters',
@@ -589,7 +589,7 @@ class AblDebugSession extends DebugSession {
                     verbose('ScopesResponse');
                 });
             });
-        }).catch(reason => {
+        }).catch((reason) => {
             logError('Unable to list vars.');
             return this.sendErrorResponse(response, 2004, 'Unable to list vars: "{e}"', { e: reason.toString() });
         });
@@ -647,66 +647,66 @@ class AblDebugSession extends DebugSession {
         if (v.kind === AblDebugKind.Array) {
             return {
                 result: v.type + v.value,
-                variablesReference: this._variableHandles.create(v)
+                variablesReference: this._variableHandles.create(v),
             };
         } else if (v.kind === AblDebugKind.TempTable) {
             return {
                 result: '<' + v.type + '>',
-                variablesReference: this._variableHandles.create(v)
+                variablesReference: this._variableHandles.create(v),
             };
         } else if (v.kind === AblDebugKind.Class || v.kind === AblDebugKind.BaseClass) {
             if (v.value !== '?') {
                 return {
                     result: v.value,
-                    variablesReference: this._variableHandles.create(v)
+                    variablesReference: this._variableHandles.create(v),
                 };
             }
             return {
                 result: v.value,
-                variablesReference: 0
+                variablesReference: 0,
             };
         } else if (v.type === 'CHARACTER' || v.type === 'LONGCHAR') {
             // let val = v.value.replace(/\n/g, '');
             let val = v.value;
-            let quoteIdx = val.indexOf('"');
+            const quoteIdx = val.indexOf('"');
             if (quoteIdx > 0) {
                 // let length = parseInt(val.substring(0, quoteIdx));
                 val = val.substr(quoteIdx);
             }
             return {
                 result: val,
-                variablesReference: 0
+                variablesReference: 0,
             };
         } else {
             return {
                 result: v.value || ('<' + v.type + '>'),
-                variablesReference: v.children.length > 0 ? this._variableHandles.create(v) : 0
+                variablesReference: v.children.length > 0 ? this._variableHandles.create(v) : 0,
             };
         }
     }
 
     protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): void {
         verbose('VariablesRequest');
-        let vari = this._variableHandles.get(args.variablesReference);
+        const vari = this._variableHandles.get(args.variablesReference);
         let variables;
         if (vari.kind === AblDebugKind.TempTable) {
 
-            this.ablDebugger.getFields(vari.name).then(msgFields => {
-                let fields = msgFields.args.slice(1);
-                variables = fields.map(f => {
+            this.ablDebugger.getFields(vari.name).then((msgFields) => {
+                const fields = msgFields.args.slice(1);
+                variables = fields.map((f) => {
                     return {
                         name: f[0],
                         type: f[1],
                         kind: AblDebugKind.Variable,
                         value: f[3],
-                        children: []
+                        children: [],
                     };
                 }).map((f, i) => {
-                    let { result, variablesReference } = this.convertDebugVariableToProtocolVariable(f, i);
+                    const { result, variablesReference } = this.convertDebugVariableToProtocolVariable(f, i);
                     return {
                         name: f.name,
                         value: result,
-                        variablesReference
+                        variablesReference,
                     };
                 });
                 response.body = { variables };
@@ -719,7 +719,7 @@ class AblDebugSession extends DebugSession {
             let parentRef = vari.parentReference;
             // We should find the full path to the property ex: 'class1:propertyA:propertyB'
             while (parentRef) {
-                let parentVar = this._variableHandles.get(parentRef);
+                const parentVar = this._variableHandles.get(parentRef);
                 if (parentVar) {
                     if (parentVar.kind === AblDebugKind.Class) {
                         classInfoName = parentVar.name + ':' + classInfoName;
@@ -729,34 +729,34 @@ class AblDebugSession extends DebugSession {
                     parentRef = null;
                 }
             }
-            this.ablDebugger.getClassInfo(classInfoName).then(msgClassInfo => {
-                let baseClass = msgClassInfo.baseClass;
-                let fields = msgClassInfo.properties;
+            this.ablDebugger.getClassInfo(classInfoName).then((msgClassInfo) => {
+                const baseClass = msgClassInfo.baseClass;
+                const fields = msgClassInfo.properties;
                 if (baseClass) {
-                    let varBaseClass: DebugVariable = {
+                    const varBaseClass: DebugVariable = {
                         children: [],
                         name: '<base>',
                         kind: AblDebugKind.BaseClass,
                         type: baseClass,
                         value: baseClass,
-                        parentReference: args.variablesReference
+                        parentReference: args.variablesReference,
                     };
                     fields.unshift(varBaseClass);
                 }
 
                 variables = fields.map((f, i) => {
                     f.parentReference = args.variablesReference;
-                    let { result, variablesReference } = this.convertDebugVariableToProtocolVariable(f, i);
+                    const { result, variablesReference } = this.convertDebugVariableToProtocolVariable(f, i);
                     return {
                         name: f.name,
                         value: result,
-                        variablesReference
+                        variablesReference,
                     };
                 });
                 response.body = { variables };
                 this.sendResponse(response);
                 verbose('VariablesResponse');
-            }, msgErr => {
+            }, (msgErr) => {
                 variables = [{ name: 'error', value: msgErr.args[0][0], variablesReference: 0 }];
                 response.body = { variables };
                 this.sendResponse(response);
@@ -764,29 +764,29 @@ class AblDebugSession extends DebugSession {
             });
         } else if (vari.kind === AblDebugKind.Array) {
             // TODO if in a class, compute full name to property
-            this.ablDebugger.getArray(vari.name).then(msgArray => {
-                let values = msgArray.values;
+            this.ablDebugger.getArray(vari.name).then((msgArray) => {
+                const values = msgArray.values;
                 if (values.length > 0) {
                     variables = values.map((v, i) => {
-                        let debugVariable: DebugVariable = {
+                        const debugVariable: DebugVariable = {
                             children: [],
                             kind: AblDebugKind.Variable,
                             name: `${i + 1}`, // ABL array indice starts at 1
                             value: v,
-                            type: vari.type
+                            type: vari.type,
                         };
-                        let { result, variablesReference } = this.convertDebugVariableToProtocolVariable(debugVariable, i);
+                        const { result, variablesReference } = this.convertDebugVariableToProtocolVariable(debugVariable, i);
                         return {
                             name: debugVariable.name,
                             value: result,
-                            variablesReference
+                            variablesReference,
                         };
                     });
                 }
                 response.body = { variables };
                 this.sendResponse(response);
                 verbose('VariablesResponse');
-            }, msgErr => {
+            }, (msgErr) => {
                 variables = [{ name: 'error', value: msgErr.args[0][0], variablesReference: 0 }];
                 response.body = { variables };
                 this.sendResponse(response);
@@ -798,12 +798,12 @@ class AblDebugSession extends DebugSession {
             let parentRef = vari.parentReference;
             // We should find the full path to the property ex: 'class1:propertyA:propertyB'
             while (parentRef) {
-                let parentVar = this._variableHandles.get(parentRef);
+                const parentVar = this._variableHandles.get(parentRef);
                 if (parentVar) {
                     if (parentVar.kind !== AblDebugKind.BaseClass) {
-                        if (classInfoName !== '')
+                        if (classInfoName !== '') {
                             classInfoName = parentVar.name + ':' + classInfoName;
-                        else classInfoName = parentVar.name;
+                        } else { classInfoName = parentVar.name; }
                     }
                     depth += 1;
                     parentRef = parentVar.parentReference;
@@ -811,34 +811,34 @@ class AblDebugSession extends DebugSession {
                     parentRef = null;
                 }
             }
-            this.ablDebugger.getClassInfo(`${classInfoName} DEPTH ${depth}`).then(msgClassInfo => {
-                let baseClass = msgClassInfo.baseClass;
-                let fields = msgClassInfo.properties;
+            this.ablDebugger.getClassInfo(`${classInfoName} DEPTH ${depth}`).then((msgClassInfo) => {
+                const baseClass = msgClassInfo.baseClass;
+                const fields = msgClassInfo.properties;
                 if (baseClass) {
-                    let varBaseClass: DebugVariable = {
+                    const varBaseClass: DebugVariable = {
                         children: [],
                         name: '<base>',
                         kind: AblDebugKind.BaseClass,
                         type: baseClass,
                         value: baseClass,
-                        parentReference: args.variablesReference
+                        parentReference: args.variablesReference,
                     };
                     fields.unshift(varBaseClass);
                 }
 
                 variables = fields.map((f, i) => {
                     f.parentReference = args.variablesReference;
-                    let { result, variablesReference } = this.convertDebugVariableToProtocolVariable(f, i);
+                    const { result, variablesReference } = this.convertDebugVariableToProtocolVariable(f, i);
                     return {
                         name: f.name,
                         value: result,
-                        variablesReference
+                        variablesReference,
                     };
                 });
                 response.body = { variables };
                 this.sendResponse(response);
                 verbose('VariablesResponse');
-            }, msgErr => {
+            }, (msgErr) => {
                 variables = [{ name: 'error', value: msgErr.args[0][0], variablesReference: 0 }];
                 response.body = { variables };
                 this.sendResponse(response);
@@ -866,11 +866,11 @@ class AblDebugSession extends DebugSession {
             //     });
             // }
             variables = vari.children.map((v, i) => {
-                let { result, variablesReference } = this.convertDebugVariableToProtocolVariable(v, i);
+                const { result, variablesReference } = this.convertDebugVariableToProtocolVariable(v, i);
                 return {
                     name: v.name,
                     value: result,
-                    variablesReference
+                    variablesReference,
                 };
             });
             response.body = { variables };
@@ -923,7 +923,7 @@ class AblDebugSession extends DebugSession {
                 this.ablDebugger.sendMessage(`watch ${args.expression}`);
                 this.watchpointExpressions.add(args.expression);
             }
-            this.ablDebugger.sendMessageWithResponse<DebugMessage>('show watch', 'MSG_WATCHPOINTS').then(msg => {
+            this.ablDebugger.sendMessageWithResponse<DebugMessage>('show watch', 'MSG_WATCHPOINTS').then((msg) => {
                 // MSG_WATCHPOINTS;.1;String(varIntGlobal);UNKNOWN;0;R;** Unavailable **;.2;varIntGlobal;INTEGER;0;RW;42;.3;varIntGlobal;INTEGER;0;RW;42;.4;varIntGlobal;INTEGER;0;RW;42;.5;varCharGlobal;CHARACTER;0;RW;.7"youpi";.6;varCharGlobal;CHARACTER;0;RW;.7"youpi";.7;varCharGlobal;CHARACTER;0;RW;.7"youpi";.8;varCharGlobal;CHARACTER;0;RW;.7"youpi";..
                 // 0: index
                 // 1: expression
@@ -931,16 +931,16 @@ class AblDebugSession extends DebugSession {
                 // 3: 0 ??
                 // 4: R/RW
                 // 5: value
-                let watchpoint = msg.args.find(wp => {
+                const watchpoint = msg.args.find((wp) => {
                     return wp[1] === args.expression;
                 });
                 if (watchpoint) {
-                    let variable: DebugVariable = {
+                    const variable: DebugVariable = {
                         kind: AblDebugKind.Variable,
                         children: [],
                         name: watchpoint[1],
                         type: watchpoint[2],
-                        value: watchpoint[5]
+                        value: watchpoint[5],
                     };
                     response.body = this.convertDebugVariableToProtocolVariable(variable, 0);
                 }
@@ -955,11 +955,11 @@ class AblDebugSession extends DebugSession {
 
     protected convertRemotePathToLocal(remotePath: string): string {
         if (this.sourceMap) {
-            let entries = Object.keys(this.sourceMap);
-            let entry = entries.find(value => minimatch(remotePath, value));
+            const entries = Object.keys(this.sourceMap);
+            const entry = entries.find((value) => minimatch(remotePath, value));
             if (entry) {
-                let baseRemote = entry.replace(/\*/g, '');
-                let baseLocal = this.sourceMap[entry].replace(/\*/g, '');
+                const baseRemote = entry.replace(/\*/g, '');
+                const baseLocal = this.sourceMap[entry].replace(/\*/g, '');
                 remotePath = remotePath.replace(baseRemote, baseLocal);
                 return remotePath;
             }

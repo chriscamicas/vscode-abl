@@ -1,6 +1,6 @@
-import { window, OutputChannel } from 'vscode';
-import { spawn, ChildProcess, SpawnOptions } from 'child_process';
+import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import { Readable } from 'stream';
+import { OutputChannel, window } from 'vscode';
 
 export interface Success {
     success: true;
@@ -31,7 +31,8 @@ export interface Options {
 }
 
 export async function create(spawnCommand: string, spawnArgs: string[] | undefined,
-    spawnOptions: SpawnOptions | undefined, outputChannel: OutputChannel): Promise<Success | Error> {
+                             spawnOptions: SpawnOptions | undefined,
+                             outputChannel: OutputChannel): Promise<Success | Error> {
     if (spawnOptions === undefined) {
         spawnOptions = {};
     }
@@ -53,21 +54,21 @@ export async function create(spawnCommand: string, spawnArgs: string[] | undefin
  * @param outputChannel The output channel to write data to
  * @return The result of processing the process
  */
-export function process(process: ChildProcess, outputChannel: OutputChannel, options?: Options
+export function process(process: ChildProcess, outputChannel: OutputChannel, options?: Options,
 ): Promise<Success | Error> {
     const stdout = '';
-    const captureStdout = getOption(options, o => o.captureStdout, false);
+    const captureStdout = getOption(options, (o) => o.captureStdout, false);
     subscribeToDataEvent(process.stdout, outputChannel, captureStdout, stdout);
     const stderr = '';
-    const captureStderr = getOption(options, o => o.captureStderr, false);
+    const captureStderr = getOption(options, (o) => o.captureStderr, false);
     subscribeToDataEvent(process.stderr, outputChannel, captureStderr, stderr);
-    return new Promise<Success | Error>(resolve => {
+    return new Promise<Success | Error>((resolve) => {
         const processProcessEnding = (code: number) => {
             resolve({
                 success: true,
                 code,
                 stdout,
-                stderr
+                stderr,
             });
         };
         // If some error happens, then the "error" and "close" events happen.
@@ -80,16 +81,18 @@ export function process(process: ChildProcess, outputChannel: OutputChannel, opt
             resolve({ success: false });
         });
         process.on('close', (code, signal) => {
-            if (getOption(options, o => o.displayClose, false))
+            if (getOption(options, (o) => o.displayClose, false)) {
                 outputChannel.appendLine(`\nclose: code=${code}, signal=${signal}`);
+            }
             processClosed = true;
             if (processExited) {
                 processProcessEnding(code);
             }
         });
         process.on('exit', (code, signal) => {
-            if (getOption(options, o => o.displayExit, true))
+            if (getOption(options, (o) => o.displayExit, true)) {
                 outputChannel.appendLine(`\nexit: code=${code}, signal=${signal}`);
+            }
             processExited = true;
             if (processClosed) {
                 processProcessEnding(code);
@@ -99,7 +102,7 @@ export function process(process: ChildProcess, outputChannel: OutputChannel, opt
 }
 
 function getOption(options: Options | undefined, getOption: (options: Options) => boolean | undefined,
-    defaultValue: boolean): boolean {
+                   defaultValue: boolean): boolean {
     if (options === undefined) {
         return defaultValue;
     }
@@ -111,7 +114,7 @@ function getOption(options: Options | undefined, getOption: (options: Options) =
 }
 
 function subscribeToDataEvent(readable: Readable, outputChannel: OutputChannel, saveData: boolean, dataStorage: string): void {
-    readable.on('data', chunk => {
+    readable.on('data', (chunk) => {
         const chunkAsString = typeof chunk === 'string' ? chunk : chunk.toString();
         outputChannel.append(chunkAsString);
         if (saveData) {

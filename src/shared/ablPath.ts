@@ -1,9 +1,9 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import { OpenEdgeConfig } from './openEdgeConfigFile';
-import * as fs from 'fs';
 
 export function getBinPath(toolName: string, dlcPath?: string) {
-    let dlc = dlcPath || process.env['DLC'];
+    const dlc = dlcPath || process.env.DLC;
     return path.join(dlc, 'bin', toolName);
 }
 
@@ -13,8 +13,9 @@ export function getProBin(dlcPath?: string) {
 
 export function getProwinBin(dlcPath?: string) {
     let prowin = getBinPath('prowin.exe', dlcPath);
-    if (!fs.existsSync(prowin))
+    if (!fs.existsSync(prowin)) {
         prowin = getBinPath('prowin32.exe', dlcPath);
+    }
     return prowin;
 }
 export interface ProArgsOptions {
@@ -31,18 +32,18 @@ export function createProArgs(options: ProArgsOptions): string[] {
     let pfArgs = [];
     if (options.parameterFiles) {
         // pfArgs = openEdgeConfig.parameterFiles.filter(pf => pf.trim().length > 0).map(pf => { return '-pf ' + pf; });
-        pfArgs = options.parameterFiles.filter(pf => pf.trim().length > 0).reduce((r, a) => r.concat('-pf', a), []);
+        pfArgs = options.parameterFiles.filter((pf) => pf.trim().length > 0).reduce((r, a) => r.concat('-pf', a), []);
         for (let i = 0; i < pfArgs.length; i++) {
             pfArgs[i] = pfArgs[i].replace('${workspaceRoot}', options.workspaceRoot);
         }
     }
     let args = [
-        '-T' // Redirect temp
+        '-T', // Redirect temp
     ];
     if (options.temporaryDirectory) {
         args.push(options.temporaryDirectory);
     } else {
-        args.push(process.env['TEMP']);
+        args.push(process.env.TEMP);
     }
     args = args.concat(pfArgs);
     if (options.batchMode) {
@@ -67,7 +68,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
             openEdgeConfig.proPath = ['${workspaceRoot}'];
         }
         openEdgeConfig.proPath.push(path.join(__dirname, '../../../abl-src'));
-        let paths = openEdgeConfig.proPath.map(p => {
+        const paths = openEdgeConfig.proPath.map((p) => {
             p = p.replace('${workspaceRoot}', workspaceRoot);
             p = p.replace('${workspaceFolder}', workspaceRoot);
             p = path.posix.normalize(p);

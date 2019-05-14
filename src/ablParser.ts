@@ -5,9 +5,9 @@ const PARSE_INSTRUCTION = 1;
 const PARSE_COMMENT = 2;
 const PARSE_STRING = 3;
 
-export function ParseDocument (document: vscode.TextDocument, token: vscode.CancellationToken): Array<ParseItem> {
+export function ParseDocument(document: vscode.TextDocument, token: vscode.CancellationToken): ParseItem[] {
     // this stores all the symbols we create
-    let symbols: Array<ParseItem> = [];
+    const symbols: ParseItem[] = [];
 
     let parse_status = new ParseStatus();
 
@@ -16,7 +16,7 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
 
         // Cancel this on Request
         if (token.isCancellationRequested) {
-            throw 'Operation cancelllation';
+            throw new Error('Operation cancelllation');
         }
 
         /*
@@ -57,7 +57,7 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
             if (tildePos < 0) {
                 break tildeCheck;
             }
-            let replaceMe = parse_status.parse_string.substr(tildePos, 4);
+            const replaceMe = parse_status.parse_string.substr(tildePos, 4);
             parse_status.parse_string = parse_status.parse_string.replace(replaceMe, ' ');
         }
 
@@ -79,9 +79,9 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
 
         // check for mode_change
         mcc: while (parse_status.parse_string.length > 0) {
-            let mode_change = parse_status.parse_string.search(/"|'|\/\/|\/\*/);
+            const mode_change = parse_status.parse_string.search(/"|'|\/\/|\/\*/);
             if (mode_change >= 0) {
-                let first_char = parse_status.parse_string.substr(mode_change, 1);
+                const first_char = parse_status.parse_string.substr(mode_change, 1);
                 // remember parseable part
                 if (mode_change > 0) {
                     parse_status.instruction_string += parse_status.parse_string.substring(0, mode_change);
@@ -93,7 +93,7 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
                     parse_status.parse_string = parse_status.parse_string.substr(mode_change + 1);
                     parse_status = parseForStringEnd(parse_status);
                 } else {
-                    let second_char = parse_status.parse_string.substr(mode_change + 1, 1);
+                    const second_char = parse_status.parse_string.substr(mode_change + 1, 1);
                     if (second_char === '/') {
                         // Line Comment
                         parse_status.parse_string = '';
@@ -116,7 +116,7 @@ export function ParseDocument (document: vscode.TextDocument, token: vscode.Canc
          */
         let i_end = parse_status.instruction_string.search(/:(?=\s|$)|\.(?=\s|$)/);
         while (i_end >= 0) {
-            let end_char = parse_status.instruction_string.substr(i_end, 1);
+            const end_char = parse_status.instruction_string.substr(i_end, 1);
             comp = parse_status.instruction_string.substring(0, i_end).trim();
             parse_status.instruction_string = parse_status.instruction_string.substr(i_end + 1);
 
@@ -182,7 +182,7 @@ export class ParseItem {
 }
 
 // Search for Comment End
-function parseForCommentEnd (pStatus: ParseStatus): ParseStatus {
+function parseForCommentEnd(pStatus: ParseStatus): ParseStatus {
     // check start comment
     let comment_start = 0;
     comment: while (comment_start >= 0) {
@@ -196,7 +196,7 @@ function parseForCommentEnd (pStatus: ParseStatus): ParseStatus {
         }
 
         // set new comment depth level
-        let comment_type = pStatus.parse_string.substr(comment_start, 2);
+        const comment_type = pStatus.parse_string.substr(comment_start, 2);
         if (comment_type === '/*') {
             pStatus.parse_depth++;
         } else {
@@ -216,7 +216,7 @@ function parseForCommentEnd (pStatus: ParseStatus): ParseStatus {
 }
 
 // Search for String End
-function parseForStringEnd (pStatus: ParseStatus): ParseStatus {
+function parseForStringEnd(pStatus: ParseStatus): ParseStatus {
 
     let end_quote = -1;
     if (pStatus.string_quote === '\'') {
@@ -244,7 +244,7 @@ function parseForStringEnd (pStatus: ParseStatus): ParseStatus {
 }
 
 // create symbol for Block
-function parseBlock (pBlock: string): ParseItem {
+function parseBlock(pBlock: string): ParseItem {
     // empty string, nothing to do
     if (pBlock.length === 0) {
         return null;
@@ -254,7 +254,7 @@ function parseBlock (pBlock: string): ParseItem {
         pBlock = pBlock.substr(0, pBlock.length - 1);
     }
     // split into words
-    let words = pBlock.split(/\s+/);
+    const words = pBlock.split(/\s+/);
     // no words, no work
     if (words.length === 0) {
         return null;
@@ -288,7 +288,7 @@ function parseBlock (pBlock: string): ParseItem {
         case 'constructor':
             // check for keywords that may precede the name
             let iC = 1;
-            let wC = words[1].toLowerCase();
+            const wC = words[1].toLowerCase();
             if (wC === 'private' || wC === 'public' || wC === 'protected' || wC === 'static') {
                 iC++;
             }
@@ -296,7 +296,7 @@ function parseBlock (pBlock: string): ParseItem {
         case 'destructor':
             // check for keywords that may precede the name
             let iD = 1;
-            let wD = words[1].toLowerCase();
+            const wD = words[1].toLowerCase();
             if (wD === 'public') {
                 iD++;
             }
@@ -314,7 +314,7 @@ function parseBlock (pBlock: string): ParseItem {
             // We want the Name of the Method, so check for various keywords
             let iM = 1;
             while (words[iM]) {
-                let wM = words[iM].toLowerCase();
+                const wM = words[iM].toLowerCase();
                 if (wM === 'private' || wM === 'public' || wM === 'protected' || wM === 'static'
                     || wM === 'abstract' || wM === 'override' || wM === 'final') {
                     iM++;
@@ -336,10 +336,10 @@ function parseBlock (pBlock: string): ParseItem {
 }
 
 // create symbol for instruction
-function parseInstruction (pInstruction: string): ParseItem {
+function parseInstruction(pInstruction: string): ParseItem {
     // ABL is case-insensitive, TS is not; make our life easier by coverting string to lowercase
     if (pInstruction.substr(0, 3).toLowerCase().startsWith('def')) {
-        let words = pInstruction.split(/\s+/);
+        const words = pInstruction.split(/\s+/);
 
         /*
          * Walk over all words of the instruction
@@ -438,6 +438,6 @@ function parseInstruction (pInstruction: string): ParseItem {
 
 // Helper Function to Remove Brackets from names, Example: "Func(input)" -> "Func"
 function RemoveBracketFromName(pName: string): string {
-    let rName = pName.split('(', 1);
+    const rName = pName.split('(', 1);
     return rName[0];
 }

@@ -5,8 +5,8 @@
 
 'use strict';
 
-import { ABL_MODE } from './ablMode';
 import * as vscode from 'vscode';
+import { ABL_MODE } from './ablMode';
 
 export let outputChannel = vscode.window.createOutputChannel('ABL');
 

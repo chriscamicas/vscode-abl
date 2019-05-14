@@ -1,26 +1,26 @@
-import * as vscode from 'vscode';
 import path = require('path');
-import { outputChannel } from './ablStatus';
+import * as vscode from 'vscode';
 import { getOpenEdgeConfig } from './ablConfig';
-import { getProBin, createProArgs, setupEnvironmentVariables } from './shared/ablPath';
+import { outputChannel } from './ablStatus';
 import { create } from './OutputChannelProcess';
+import { createProArgs, getProBin, setupEnvironmentVariables } from './shared/ablPath';
 
 export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<any> {
     outputChannel.clear();
     let cwd = path.dirname(filename);
 
-    return getOpenEdgeConfig().then(oeConfig => {
-        let cmd = getProBin(oeConfig.dlc);
-        let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
-        let args = createProArgs({
+    return getOpenEdgeConfig().then((oeConfig) => {
+        const cmd = getProBin(oeConfig.dlc);
+        const env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
+        const args = createProArgs({
             parameterFiles: oeConfig.parameterFiles,
             batchMode: true,
             startupProcedure: path.join(__dirname, '../../abl-src/run.p'),
             param: filename,
-            workspaceRoot: vscode.workspace.rootPath
+            workspaceRoot: vscode.workspace.rootPath,
         });
         cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath).replace('${workspaceFolder}', vscode.workspace.rootPath) : cwd;
-        return create(cmd, args, { env: env, cwd: cwd }, outputChannel);
+        return create(cmd, args, { env, cwd }, outputChannel);
     });
 }
 

@@ -1,5 +1,5 @@
 import cp = require('child_process');
-import path = require('path');
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { getOpenEdgeConfig } from './ablConfig';
 import { outputChannel } from './ablStatus';

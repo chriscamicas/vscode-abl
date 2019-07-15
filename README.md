@@ -122,15 +122,3 @@ Thanks to all the contributors: mscheblein
 
 ## License
 Licensed under the [MIT](LICENSE) License.
-
-
-
-
-| Entry | Description |
-| ----- | ----------- |
-| `workingDirectory` | working directory used to run the `_progres` binary. You probably don't need to change that. |
-| `proPath` | an array of folders used to change the `PROPATH` value in the ABL session. See [What is the PROPATH ?](https://knowledgebase.progress.com/articles/Article/P103752) |
-| `dlc` | Path to the OpenEdge installation folder, useful if you don't have the `DLC` environment variable |
-| `proPathMode` | You can choose to append (or prepend) the folders defined in your `.openedge.json file` to the default `PROPATH` value, or overwrite the entire value. The default value is `append` |
-| `parameterFiles` | an array of `.pf` files used by the different commands to define startup parameters and configure the ABL Session (database connections, code page, formatting ...) |
-| `startupProcedure` | a procedure to execute before running the command (before syntax checking, or run) |

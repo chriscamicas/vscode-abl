@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CheckResult, checkSyntax, removeTestStatus } from './ablCheckSyntax';
+import { CheckResult, checkSyntax, removeSyntaxStatus } from './ablCheckSyntax';
 import { AblCompletionItemProvider } from './ablCompletionProvider';
 import { openDataDictionary } from './ablDataDictionary';
 import { AblDocumentSymbolProvider } from './ablDefinitionProvider';
@@ -183,4 +183,10 @@ function startBuildOnSaveWatcher(subscriptions: vscode.Disposable[]) {
             runBuilds(document, ablConfig);
         }, null, subscriptions);
     }
+    vscode.workspace.onDidOpenTextDocument((document) => {
+        removeSyntaxStatus();
+    }, null, subscriptions);
+    vscode.window.onDidChangeActiveTextEditor((_) => {
+        removeSyntaxStatus();
+    }, null, subscriptions);
 }

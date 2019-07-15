@@ -8,10 +8,7 @@ import { createProArgs, getProBin, setupEnvironmentVariables } from './shared/ab
 const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 // statusBarItem.command = 'abl.checkSyntax.showOutput';
 
-export function removeTestStatus(e: vscode.TextDocumentChangeEvent) {
-    if (e.document.isUntitled) {
-        return;
-    }
+export function removeSyntaxStatus() {
     statusBarItem.hide();
     statusBarItem.text = '';
 }
@@ -27,7 +24,8 @@ export interface CheckResult {
 export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<CheckResult[]> {
     outputChannel.clear();
     statusBarItem.show();
-    statusBarItem.text = 'Checking syntax';
+    // statusBarItem.text = '$(kebab-horizontal) Checking syntax';
+    statusBarItem.text = '$(sync) Checking syntax';
 
     let cwd = path.dirname(filename);
 
@@ -93,9 +91,9 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
             });
         }).then((results) => {
             if (results.length === 0) {
-                statusBarItem.text = 'Syntax OK';
+                statusBarItem.text = '$(check) Syntax OK';
             } else {
-                statusBarItem.text = 'Syntax error';
+                statusBarItem.text = '$(alert) Syntax error';
             }
             return results;
         });

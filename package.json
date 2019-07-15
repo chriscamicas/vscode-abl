@@ -1,7 +1,7 @@
 {
     "name": "openedge-abl",
     "publisher": "chriscamicas",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "OpenEdge ABL language support for VS Code.",
     "displayName": "OpenEdge ABL",
     "author": "chriscamicas",
@@ -15,15 +15,16 @@
     },
     "scripts": {
         "build": "vsce package",
-        "vscode:prepublish": "tsc -p ./",
-        "compile": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "lint": "tslint --project .",
-        "test": "node ./node_modules/vscode/bin/test"
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile",
+        "test": "mocha -u tdd ./out/test",
+        "lint": "tslint --project ."
     },
     "icon": "images/progress_icon.png",
     "engines": {
-        "vscode": "^1.17.0"
+        "vscode": "^1.22.0"
     },
     "categories": [
         "Programming Languages",
@@ -109,11 +110,6 @@
             {
                 "type": "abl",
                 "label": "ABL",
-                "enableBreakpointsFor": {
-                    "languageIds": [
-                        "abl"
-                    ]
-                },
                 "program": "./out/src/debugAdapter/ablDebug.js",
                 "runtime": "node",
                 "languages": [
@@ -249,6 +245,16 @@
                     "type": "boolean",
                     "default": true,
                     "description": "If true, use the same shortcuts as the Progress Procedure Editor (F2, Shift+F2, ...)"
+                },
+                "abl.warnConfigFile": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show a warning message if config file not found"
+                },
+                "abl.checkProgressBinary": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Check if Progress binaries are accessible"
                 }
             }
         },
@@ -282,24 +288,25 @@
     },
     "dependencies": {
         "abl-tmlanguage": "git+https://github.com/chriscamicas/abl-tmlanguage.git",
-        "glob": "^7.1.2",
+        "glob": "^7.1.4",
         "jsonminify": "^0.4.1",
         "minimatch": "^3.0.4",
-        "rimraf": "^2.6.2",
+        "rimraf": "^2.6.3",
         "util.promisify": "^1.0.0",
-        "vscode-debug-logger": "^0.0.4",
-        "vscode-debugadapter": "^1.24.0",
-        "vscode-debugprotocol": "^1.24.0",
+        "vscode-debug-logger": "^0.0.5",
+        "vscode-debugadapter": "^1.35.0",
+        "vscode-debugprotocol": "^1.35.0",
         "xml2js": "^0.4.19"
     },
     "devDependencies": {
-        "@types/fs-extra": "0.0.35",
-        "@types/mocha": "^2.2.44",
-        "@types/node": "^6.0.90",
-        "fs-extra": "^4.0.2",
-        "tslint": "^5.8.0",
-        "typescript": "^2.6.1",
-        "vsce": "^1.58.0",
-        "vscode": "^1.1.30"
+        "@types/glob": "^7.1.1",
+        "@types/mocha": "^5.2.6",
+        "@types/node": "^10.12.21",
+        "@types/vscode": "^1.36.0",
+        "mocha": "^6.1.4",
+        "typescript": "^3.3.1",
+        "tslint": "^5.12.1",
+        "typescript-tslint-plugin": "^0.5.4",
+        "vscode-test": "^1.0.0-next.0"
     }
 }

@@ -1,22 +1,22 @@
-import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
+import * as vscode from 'vscode';
 
 import { getOpenEdgeConfig } from './ablConfig';
-import { getProwinBin, createProArgs } from './shared/ablPath';
+import { createProArgs, getProwinBin } from './shared/ablPath';
 
 export function openDataDictionary() {
-    let cwd = vscode.workspace.rootPath;
-    let env = process.env;
+    const cwd = vscode.workspace.rootPath;
+    const env = process.env;
 
-    return getOpenEdgeConfig().then(oeConfig => {
-        let cmd = getProwinBin(oeConfig.dlc);
+    return getOpenEdgeConfig().then((oeConfig) => {
+        const cmd = getProwinBin(oeConfig.dlc);
 
         // TODO : reuse the openedgeconfig file and pf files defined
-        let args = createProArgs({
+        const args = createProArgs({
             startupProcedure: '_dict.p',
-            parameterFiles: oeConfig.parameterFiles
+            parameterFiles: oeConfig.parameterFiles,
         });
-        cp.spawn(cmd, args, { env: env, cwd: cwd, detached: true });
+        cp.spawn(cmd, args, { env, cwd, detached: true });
     });
 }

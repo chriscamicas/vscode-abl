@@ -1,15 +1,15 @@
-import * as vscode from 'vscode';
-import { OpenEdgeConfig } from './shared/openEdgeConfigFile';
-import { getOpenEdgeConfig } from './ablConfig';
-import { getProBin, createProArgs, setupEnvironmentVariables } from './shared/ablPath';
-import { create } from './OutputChannelProcess';
-import { readFile, mkdtemp } from 'fs';
+import { mkdtemp, readFile } from 'fs';
 import { tmpdir } from 'os';
+import * as vscode from 'vscode';
+import { getOpenEdgeConfig } from './ablConfig';
+import { create } from './OutputChannelProcess';
+import { createProArgs, getProBin, setupEnvironmentVariables } from './shared/ablPath';
+import { OpenEdgeConfig } from './shared/openEdgeConfigFile';
 
-import path = require('path');
-import xml2js = require('xml2js');
-import * as promisify from 'util.promisify';
 import * as glob from 'glob';
+import path = require('path');
+import * as promisify from 'util.promisify';
+import xml2js = require('xml2js');
 
 import * as rimraf from 'rimraf';
 
@@ -18,47 +18,45 @@ const globAsync = promisify(glob);
 const mkdtempAsync = promisify(mkdtemp);
 const rmdirAsync = promisify(rimraf);
 
-let outputChannel = vscode.window.createOutputChannel('ABL Tests');
+const outputChannel = vscode.window.createOutputChannel('ABL Tests');
 const failedStatusChar = '✘';
 const successStatusChar = '✔';
 
-const promiseSerial = funcs =>
+const promiseSerial = (funcs) =>
     funcs.reduce((promise, func) =>
-        promise.then(result => func().then(Array.prototype.concat.bind(result))),
+        promise.then((result) => func().then(Array.prototype.concat.bind(result))),
         Promise.resolve([]));
 
 export function ablTest(filename: string, ablConfig: vscode.WorkspaceConfiguration): Thenable<any> {
 
     // let cwd = path.dirname(filename);
-    let cwd = vscode.workspace.rootPath;
+    const cwd = vscode.workspace.rootPath;
 
-    return getOpenEdgeConfig().then(oeConfig => {
-        let cmd = getProBin(oeConfig.dlc);
+    return getOpenEdgeConfig().then((oeConfig) => {
+        const cmd = getProBin(oeConfig.dlc);
         outputChannel.clear();
         outputChannel.show(true);
 
         outputChannel.appendLine(`Starting UnitTests`);
 
-        let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
-        let summary: any;
+        const env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
         if (filename) {
-            runTestFile(filename, cmd, env, cwd, oeConfig).then(summary => {
+            runTestFile(filename, cmd, env, cwd, oeConfig).then((summary) => {
                 outputChannel.appendLine(`Executed ${summary.tests} tests, Errors ${summary.errors}, Failures ${summary.failures}`);
             });
         } else {
-            oeConfig.test.files.forEach(async pattern => {
-                let files = await globAsync(pattern, { cwd: cwd });
-                let r = [];
-                for (let i = 0; i < files.length; i++) {
-                    r.push(await runTestFile(files[i], cmd, env, cwd, oeConfig));
+            oeConfig.test.files.forEach(async (pattern) => {
+                const files = await globAsync(pattern, { cwd });
+                const r = [];
+                for (const file of files) {
+                    r.push(await runTestFile(file, cmd, env, cwd, oeConfig));
                 }
-                // console.log(`after all ${r}`);
 
-                summary = r.reduce((s1: any, s2: any) => {
+                const summary = r.reduce((s1: any, s2: any) => {
                     return {
-                        tests: s1.tests + s2.tests,
                         errors: s1.errors + s2.errors,
-                        failures: s1.failures + s2.failures
+                        failures: s1.failures + s2.failures,
+                        tests: s1.tests + s2.tests,
                     };
                 });
                 outputChannel.appendLine(`Executed ${summary.tests} tests, Errors ${summary.errors}, Failures ${summary.failures}`);
@@ -69,10 +67,10 @@ export function ablTest(filename: string, ablConfig: vscode.WorkspaceConfigurati
 }
 
 async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeConfig) {
-    let outDir = await mkdtempAsync(path.join(tmpdir(), 'ablunit-'));
+    const outDir = await mkdtempAsync(path.join(tmpdir(), 'ablunit-'));
 
-    let xmlParser = new xml2js.Parser();
-    let parseStringAsync = promisify(xmlParser.parseString);
+    const xmlParser = new xml2js.Parser();
+    const parseStringAsync = promisify(xmlParser.parseString);
 
     // TODO specif args for Tests
     // TODO -db ?
@@ -81,32 +79,32 @@ async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeConfig) {
         beforeCmd = beforeCmd.replace(/%([^%]+)%/g, (_, n) => {
             return env[n];
         });
-        let beforeCwd = oeConfig.test.beforeEach.cwd || cwd;
-        await create(beforeCmd, ['-c', `echo BASH before ${fileName}`], { env: env, cwd: beforeCwd }, outputChannel);
+        const beforeCwd = oeConfig.test.beforeEach.cwd || cwd;
+        await create(beforeCmd, ['-c', `echo BASH before ${fileName}`], { env, cwd: beforeCwd }, outputChannel);
         // await create(beforeCmd, oeConfig.test.beforeEach.args, { env: env, cwd: cwd }, outputChannel);
     }
-    let args = createProArgs({
-        parameterFiles: oeConfig.parameterFiles,
-        temporaryDirectory: outDir,
+    const args = createProArgs({
         batchMode: true,
+        param: `${fileName} -outputLocation ${outDir}`,
+        parameterFiles: oeConfig.parameterFiles,
         startupProcedure: 'ABLUnitCore.p',
-        param: `${fileName} -outputLocation ${outDir}`
+        temporaryDirectory: outDir,
     });
-    let outputFile = path.join(outDir, 'results.xml');
+    const outputFile = path.join(outDir, 'results.xml');
 
-    let consoleOutput = await create(cmd, args, { env: env, cwd: cwd }, outputChannel);
-    let content = await readFileAsync(outputFile);
-    let result = await parseStringAsync(content);
-    let testResultSummary = {
-        tests: 0,
+    const consoleOutput = await create(cmd, args, { env, cwd }, outputChannel);
+    const content = await readFileAsync(outputFile);
+    const result = await parseStringAsync(content);
+    const testResultSummary = {
         errors: 0,
-        failures: 0
+        failures: 0,
+        tests: 0,
     };
     if (result.testsuites) {
-        result.testsuites.testsuite.forEach(testsuite => {
-            testsuite.testcase.forEach(t => {
+        result.testsuites.testsuite.forEach((testsuite) => {
+            testsuite.testcase.forEach((t) => {
 
-                let statusChar = t.$.status !== 'Success' ? failedStatusChar : successStatusChar;
+                const statusChar = t.$.status !== 'Success' ? failedStatusChar : successStatusChar;
                 outputChannel.appendLine(`\t${statusChar} ${t.$.name}`);
 
                 let stacktrace = [];
@@ -116,17 +114,17 @@ async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeConfig) {
                 if (t.$.status === 'Error') {
                     stacktrace = t.error;
                 }
-                stacktrace.forEach(f => {
-                    f.split('\r\n').filter(l => l.indexOf('ABLUnit') === -1).forEach(l => {
+                stacktrace.forEach((f) => {
+                    f.split('\r\n').filter((l) => l.indexOf('ABLUnit') === -1).forEach((l) => {
                         outputChannel.appendLine(`\t\t↱ ${l}`);
                     });
                 });
 
             });
         });
-        testResultSummary.tests += parseInt(result.testsuites.$.tests);
-        testResultSummary.errors += parseInt(result.testsuites.$.errors);
-        testResultSummary.failures += parseInt(result.testsuites.$.failures);
+        testResultSummary.tests += parseInt(result.testsuites.$.tests, 10);
+        testResultSummary.errors += parseInt(result.testsuites.$.errors, 10);
+        testResultSummary.failures += parseInt(result.testsuites.$.failures, 10);
         // outputChannel.appendLine(`Executed ${result.testsuites.$.tests} tests, Errors ${result.testsuites.$.errors}, Failures ${result.testsuites.$.failures}`);
     }
     await rmdirAsync(outDir);
@@ -136,8 +134,8 @@ async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeConfig) {
         afterCmd = afterCmd.replace(/%([^%]+)%/g, (_, n) => {
             return env[n];
         });
-        let afterCwd = oeConfig.test.afterEach.cwd || cwd;
-        await create(afterCmd, ['-c', `echo BASH after ${fileName}`], { env: env, cwd: afterCwd }, outputChannel);
+        const afterCwd = oeConfig.test.afterEach.cwd || cwd;
+        await create(afterCmd, ['-c', `echo BASH after ${fileName}`], { env, cwd: afterCwd }, outputChannel);
         // await create(afterCmd, oeConfig.test.afterEach.args, { env: env, cwd: cwd }, outputChannel);
     }
     return testResultSummary;

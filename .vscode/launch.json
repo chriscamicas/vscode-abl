@@ -3,7 +3,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Extension",
+            "name": "Run Extension",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
@@ -15,7 +15,7 @@
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
             ],
-            "preLaunchTask": "npm"
+			"preLaunchTask": "npm: watch"
         },
     	{
             "name": "Launch as server",
@@ -29,31 +29,30 @@
             "sourceMaps": true,
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
-            ]
+            ],
+			"preLaunchTask": "npm: watch"
         },
         {
-            "name": "Launch Tests",
+            "name": "Extension Tests",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             // the workspace path should be GOPATH
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}",
-                "--extensionTestsPath=${workspaceFolder}/out/test"
+				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
             ],
-            "stopOnEntry": false,
-            "sourceMaps": true,
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
             ],
-            "preLaunchTask": "npm"
+            "preLaunchTask": "npm: watch"
         }
     ],
     "compounds": [
         {
             "name": "Extension + Debug server",
             "configurations": [
-                "Launch Extension",
+                "Run Extension",
                 "Launch as server"
             ]
         }

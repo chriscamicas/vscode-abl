@@ -7,7 +7,7 @@ export enum AblDebugKind {
     Parameter,
     BaseClass,
     Class,
-    Array
+    Array,
 }
 
 export interface DebugVariable {
@@ -38,7 +38,7 @@ const primitiveTypes = [
     'RAW',
     'RECID',
     'ROWID',
-    'WIDGET-HANDLE'
+    'WIDGET-HANDLE',
 ];
 
 export function isPrimitiveType(type: string) {

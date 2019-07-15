@@ -4,7 +4,7 @@ import { loadConfigFile, OPENEDGE_CONFIG_FILENAME, OpenEdgeConfig } from './shar
 let openEdgeConfig: OpenEdgeConfig = null;
 let watcher: FileSystemWatcher = null;
 
-function findConfigFile() {
+export function findConfigFile() {
     return workspace.findFiles(OPENEDGE_CONFIG_FILENAME).then((uris) => {
         if (uris.length > 0) {
             return uris[0].fsPath;

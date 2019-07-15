@@ -4,7 +4,11 @@ import { OpenEdgeConfig } from './openEdgeConfigFile';
 
 export function getBinPath(toolName: string, dlcPath?: string) {
     const dlc = dlcPath || process.env.DLC;
-    return path.join(dlc, 'bin', toolName);
+    if (dlc) {
+        return path.join(dlc, 'bin', toolName);
+    }
+    // dlc not set, assume the binary is in the PATH
+    return toolName;
 }
 
 export function getProBin(dlcPath?: string) {

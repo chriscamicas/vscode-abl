@@ -6,6 +6,7 @@ import { AblDocumentSymbolProvider } from './ablDefinitionProvider';
 import { ABL_MODE } from './ablMode';
 import { run } from './ablRun';
 import { ablTest } from './ablTest';
+import { checkOpenEdgeConfigFile, checkProgressBinary } from './checkExtensionConfig';
 import { AblDebugConfigurationProvider } from './debugAdapter/ablDebugConfigurationProvider';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
@@ -81,6 +82,32 @@ export function activate(ctx: vscode.ExtensionContext): void {
     ctx.subscriptions.push(
         vscode.languages.registerCompletionItemProvider(
             ABL_MODE, new AblCompletionItemProvider(), '.', '\"'));
+
+    const ablConfig = vscode.workspace.getConfiguration('abl');
+
+    const options = ['Ignore', 'Don\'t show this message again', 'Read the docs'];
+    if (ablConfig.get('warnConfigFile')) {
+        checkOpenEdgeConfigFile().catch((_) => {
+            vscode.window.showInformationMessage('No .openedge.json found, using the default configuration', ...options).then((item) => {
+                if (item === options[1]) {
+                    ablConfig.update('warnConfigFile', false);
+                } else if (item === options[2]) {
+                    vscode.env.openExternal(vscode.Uri.parse('https://github.com/chriscamicas/vscode-abl/wiki/Config-file'));
+                }
+            });
+        });
+    }
+    if (ablConfig.get('checkProgressBinary')) {
+        checkProgressBinary().catch((_) => {
+            vscode.window.showErrorMessage('Progress binary not found. You should check your configuration', ...options).then((item) => {
+                if (item === options[1]) {
+                    ablConfig.update('checkProgressBinary', false);
+                } else if (item === options[2]) {
+                    vscode.env.openExternal(vscode.Uri.parse('https://github.com/chriscamicas/vscode-abl/wiki/Progress-binary-not-found'));
+                }
+            });
+        });
+    }
 }
 
 function deactivate() {

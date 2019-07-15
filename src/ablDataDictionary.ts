@@ -14,8 +14,8 @@ export function openDataDictionary() {
 
         // TODO : reuse the openedgeconfig file and pf files defined
         const args = createProArgs({
-            startupProcedure: '_dict.p',
             parameterFiles: oeConfig.parameterFiles,
+            startupProcedure: '_dict.p',
         });
         cp.spawn(cmd, args, { env, cwd, detached: true });
     });

@@ -32,7 +32,6 @@ export function activate(ctx: vscode.ExtensionContext): void {
         runBuilds(vscode.window.activeTextEditor.document, ablConfig);
     }));
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.dataDictionary', () => {
-        // let ablConfig = vscode.workspace.getConfiguration('abl');
         openDataDictionary();
     }));
 
@@ -83,30 +82,31 @@ export function activate(ctx: vscode.ExtensionContext): void {
         vscode.languages.registerCompletionItemProvider(
             ABL_MODE, new AblCompletionItemProvider(), '.', '\"'));
 
-    const ablConfig = vscode.workspace.getConfiguration('abl');
-
-    const options = ['Ignore', 'Don\'t show this message again', 'Read the docs'];
-    if (ablConfig.get('warnConfigFile')) {
-        checkOpenEdgeConfigFile().catch((_) => {
-            vscode.window.showInformationMessage('No .openedge.json found, using the default configuration', ...options).then((item) => {
-                if (item === options[1]) {
-                    ablConfig.update('warnConfigFile', false);
-                } else if (item === options[2]) {
-                    vscode.env.openExternal(vscode.Uri.parse('https://github.com/chriscamicas/vscode-abl/wiki/Config-file'));
-                }
+    {
+        const ablConfig = vscode.workspace.getConfiguration('abl');
+        const options = ['Ignore', 'Don\'t show this message again', 'Read the docs'];
+        if (ablConfig.get('warnConfigFile')) {
+            checkOpenEdgeConfigFile().catch((_) => {
+                vscode.window.showInformationMessage('No .openedge.json found, using the default configuration', ...options).then((item) => {
+                    if (item === options[1]) {
+                        ablConfig.update('warnConfigFile', false);
+                    } else if (item === options[2]) {
+                        vscode.env.openExternal(vscode.Uri.parse('https://github.com/chriscamicas/vscode-abl/wiki/Config-file'));
+                    }
+                });
             });
-        });
-    }
-    if (ablConfig.get('checkProgressBinary')) {
-        checkProgressBinary().catch((_) => {
-            vscode.window.showErrorMessage('Progress binary not found. You should check your configuration', ...options).then((item) => {
-                if (item === options[1]) {
-                    ablConfig.update('checkProgressBinary', false);
-                } else if (item === options[2]) {
-                    vscode.env.openExternal(vscode.Uri.parse('https://github.com/chriscamicas/vscode-abl/wiki/Progress-binary-not-found'));
-                }
+        }
+        if (ablConfig.get('checkProgressBinary')) {
+            checkProgressBinary().catch((_) => {
+                vscode.window.showErrorMessage('Progress binary not found. You should check your configuration', ...options).then((item) => {
+                    if (item === options[1]) {
+                        ablConfig.update('checkProgressBinary', false);
+                    } else if (item === options[2]) {
+                        vscode.env.openExternal(vscode.Uri.parse('https://github.com/chriscamicas/vscode-abl/wiki/Progress-binary-not-found'));
+                    }
+                });
             });
-        });
+        }
     }
 }
 

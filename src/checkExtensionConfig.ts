@@ -2,7 +2,7 @@ import { access } from 'fs';
 import * as promisify from 'util.promisify';
 import * as vscode from 'vscode';
 import { findConfigFile, getOpenEdgeConfig } from './ablConfig';
-import { getProBin } from './shared/ablPath';
+import { getBinPath } from './shared/ablPath';
 
 const accessAsync = promisify(access);
 
@@ -16,11 +16,15 @@ export async function checkOpenEdgeConfigFile() {
 }
 
 export async function checkProgressBinary() {
-
     // Do we have a .openedge.json config file
     const oeConfig = await getOpenEdgeConfig();
     // Can we find the progres binary
-    const cmd = getProBin(oeConfig.dlc);
+    let cmd = getBinPath('_progres.exe', oeConfig.dlc);
     // try to access the file (throw an Error)
-    await accessAsync(cmd);
+    try {
+        await accessAsync(cmd);
+    } catch (e) {
+        cmd = getBinPath('_progres', oeConfig.dlc);
+        await accessAsync(cmd);
+    }
 }

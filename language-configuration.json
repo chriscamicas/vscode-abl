@@ -3,13 +3,12 @@
         // symbol used for single line comment. Remove this entry if your language does not support line comments
         "lineComment": "//",
         // symbols used for start and end a block comment. Remove this entry if your language does not support block comments
-        "blockComment": [ "/*", "*/" ]
+        "blockComment": ["/*", "*/"]
     },
     // symbols used as brackets
     "brackets": [
         ["{", "}"],
         ["[", "]"],
-        [":", "end"],
         ["(", ")"]
     ],
     // symbols that are auto closed when typing
@@ -29,5 +28,17 @@
         ["\"", "\""],
         ["'", "'"],
         ["/*", "*/"]
-    ]
+    ],
+    // lines that end in a colon, followed by possible white space, denote a block
+    // block ends with "end." or "end" + whitespace + optional word (procedure, function, case, etc) + "."
+    "indentationRules": {
+        "increaseIndentPattern": "^.+:\\s*$",
+        "decreaseIndentPattern": "^\\s*end(\\.|\\s+.*\\.)$"
+    },
+    "folding": {
+        "markers": {
+            "start": "^.+:\\s*$",
+            "end": "^\\s*end(\\.|\\s+.*\\.)$"
+        }
+    }
 }

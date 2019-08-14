@@ -1,3 +1,19 @@
+1.1
+=====
+- Code completion and Outline pane
+
+1.0
+=====
+- You can now specify a startup procedure
+
+0.9
+=====
+- New definition provider: the outline pane is now filled with the definitions found in the current document
+
+0.8
+=====
+- You can now define the dlc value from the config file (optional)
+
 0.5
 =====
 

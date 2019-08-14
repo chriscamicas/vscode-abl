@@ -1,28 +1,16 @@
 # OpenEdge ABL language support for Visual Studio Code
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
-## What's new
-* 1.1
-    - Code completion and Outline pane
-* 1.0
-    - You can now specify a startup procedure
-* 0.9
-    - New definition provider: the outline pane is now filled with the definitions found in the current document
-* 0.8
-    - You can now define the dlc value from the config file (optional)
-
 ## Features
 
 * Syntax highlighting
-* Code snippets
 * Syntax checking
 * Run
 * Debugger
 
-## Command
-* Check Syntax
-* Run current file
-* Open DataDictionary external Tool
+![features demo](./docs/images/demo.gif "Demo")
+
+![debugger demo](./docs/images/debug.gif "Debugger")
 
 ## Using
 ### Prerequisites

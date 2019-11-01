@@ -41,13 +41,14 @@ export function createProArgs(options: ProArgsOptions): string[] {
             pfArgs[i] = pfArgs[i].replace('${workspaceRoot}', options.workspaceRoot);
         }
     }
-    let args = [
-        '-T', // Redirect temp
-    ];
-    if (options.temporaryDirectory) {
-        args.push(options.temporaryDirectory);
-    } else {
-        args.push(process.env.TEMP);
+    let args = [];
+    let tempDir = options.temporaryDirectory;
+    if (!tempDir) {
+        tempDir = process.env.TEMP;
+    }
+    if (tempDir) {
+        args.push('-T');
+        args.push(tempDir);
     }
     args = args.concat(pfArgs);
     if (options.batchMode) {

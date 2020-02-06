@@ -7,6 +7,7 @@ This extension provides rich OpenEdge ABL language support for Visual Studio Cod
 * Syntax checking
 * Run
 * Debugger
+* Auto-complete (tables, fields, methods)
 
 ![features demo](./docs/images/demo.gif "Demo")
 
@@ -29,7 +30,13 @@ You can create a local config file for your project named `.openedge.json`, with
     "parameterFiles": [ // -pf
         "default.pf"
     ],
-    "startupProcedure" : "${workspaceFolder}/vsc-oe-startup.p"
+    "startupProcedure" : "${workspaceFolder}/vsc-oe-startup.p",
+    "dbDictionary": [
+        "myDatabaseForAutoComplete"
+    ],
+    "format": {
+        "trim": "right" // none
+    }
 }
 ```
 
@@ -38,6 +45,8 @@ You can create a local config file for your project named `.openedge.json`, with
 - `startupProcedure`: ''
 - `proPath`: workspaceRoot (of VSCode)
 - `workingDirectory`: folder of active source code
+- `dbDictionary` are the logical names of database files for the auto-complete option (command: ABL Read Dictionary Structure)
+- `format` are formatter options
 
 #### Parameter "startupProcedure"
 The optional Startup Procedure for OpenEdge can be used to execute 4GL code before a check syntax/debug/run operation. Can be used to create Database aliases or instantiate Singleton Classes. The Procedure is executed everytime the IDE starts a check syntax/debug/run operation.

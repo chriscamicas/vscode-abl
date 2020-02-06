@@ -91,6 +91,11 @@
                 "description": "Run current UnitTest file"
             },
             {
+                "command": "abl.dictionary.dumpDefinition",
+                "title": "ABL: Read Dictionary Structure",
+                "description": "Read the DataDictionary structure for further use"
+            },
+            {
                 "command": "abl.propath",
                 "title": "ABL: Current PROPATH",
                 "description": "See the currently set PROPATH."
@@ -264,6 +269,24 @@
                     "when": "editorTextFocus && config.abl.editorContextMenuCommands.checkSyntax && resourceLangId == abl",
                     "command": "abl.checkSyntax",
                     "group": "ABL group 1"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "abl.run.currentFile",
+                    "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.checkSyntax",
+                    "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.test",
+                    "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.test.currentFile",
+                    "when": "editorLangId == 'abl'"
                 }
             ]
         },

@@ -1,6 +1,7 @@
 import { readFile } from 'fs';
 import * as jsonminify from 'jsonminify';
 import * as promisify from 'util.promisify';
+import { OpenEdgeFormatOptions } from '../misc/OpenEdgeFormatOptions';
 
 const readFileAsync = promisify(readFile);
 
@@ -28,6 +29,8 @@ export interface OpenEdgeConfig {
     workingDirectory?: string;
     test?: TestConfig;
     startupProcedure?: string;
+    dbDictionary?: string[];
+    format?: OpenEdgeFormatOptions;
 }
 
 export function loadConfigFile(filename: string): Thenable<OpenEdgeConfig> {

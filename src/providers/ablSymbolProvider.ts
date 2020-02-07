@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
-import { ABLDocumentController, getDocumentController } from "../parser/documentController";
-import { ABL_MODE } from "../ablMode";
+import * as vscode from 'vscode';
+import { ABL_MODE } from '../ablMode';
+import { ABLDocumentController, getDocumentController } from '../parser/documentController';
 
 export class ABLSymbolProvider implements vscode.DocumentSymbolProvider {
     private _ablDocumentController: ABLDocumentController;

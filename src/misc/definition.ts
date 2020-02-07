@@ -9,10 +9,10 @@ export interface ICheckResult {
 }
 
 export class TextSelection {
-    word: string;
-    wordRange: vscode.Range;
-    statement: string;
-    statementRange: vscode.Range;
+    public word: string;
+    public wordRange: vscode.Range;
+    public statement: string;
+    public statementRange: vscode.Range;
 }
 
 export enum SYMBOL_TYPE {
@@ -23,18 +23,18 @@ export enum SYMBOL_TYPE {
     LOCAL_PARAM = 'Local Parameter',
     GLOBAL_PARAM = 'Global Parameter',
     TEMPTABLE = 'Temp-table',
-    TEMPTABLE_FIELD = 'Temp-table field'
+    TEMPTABLE_FIELD = 'Temp-table field',
 }
 
 export enum ABL_ASLIKE {
     AS = 'as',
-    LIKE = 'like'
+    LIKE = 'like',
 }
 
 export enum ABL_PARAM_DIRECTION {
     IN = 'input',
     OUT = 'output',
-    INOUT = 'input-output'
+    INOUT = 'input-output',
 }
 
 export interface ABLFieldDefinition {
@@ -54,17 +54,17 @@ export interface ABLIndexDefinition {
     primary: boolean;
 }
 export class ABLTableDefinition {
-    filename: string;
-    label: string;
-    kind: vscode.CompletionItemKind;
-    detail: string;
-    pkList: string;
-    fields: ABLVariable[];
-    indexes: ABLIndexDefinition[];
-    completionFields: vscode.CompletionList;
-    completionIndexes: vscode.CompletionList;
-    completionAdditional: vscode.CompletionList;
-    completion: vscode.CompletionList;
+    public filename: string;
+    public label: string;
+    public kind: vscode.CompletionItemKind;
+    public detail: string;
+    public pkList: string;
+    public fields: ABLVariable[];
+    public indexes: ABLIndexDefinition[];
+    public completionFields: vscode.CompletionList;
+    public completionIndexes: vscode.CompletionList;
+    public completionAdditional: vscode.CompletionList;
+    public completion: vscode.CompletionList;
 
     get allFields(): ABLVariable[] {
         return this.fields;
@@ -72,19 +72,19 @@ export class ABLTableDefinition {
 }
 
 export class ABLVariable {
-    name: string;
-    asLike: ABL_ASLIKE;
-    dataType: string;
-    line: number;
-    additional?: string;
+    public name: string;
+    public asLike: ABL_ASLIKE;
+    public dataType: string;
+    public line: number;
+    public additional?: string;
 }
 
 export class ABLMethod {
-    name: string;
-    lineAt: number;
-    lineEnd: number;
-    params: ABLParameter[];
-    localVars: ABLVariable[];
+    public name: string;
+    public lineAt: number;
+    public lineEnd: number;
+    public params: ABLParameter[];
+    public localVars: ABLVariable[];
     constructor() {
         this.params = [];
         this.localVars = [];
@@ -92,22 +92,23 @@ export class ABLMethod {
 }
 
 export class ABLParameter extends ABLVariable {
-    direction: ABL_PARAM_DIRECTION;
+    public direction: ABL_PARAM_DIRECTION;
 }
 
 export class ABLInclude {
-    name: string;
-    fsPath: string;
+    public name: string;
+    public fsPath: string;
 }
 
 export class ABLTempTable extends ABLTableDefinition {
-    line: number;
-    referenceTable: string;
-    referenceFields: ABLVariable[];
+    public line: number;
+    public referenceTable: string;
+    public referenceFields: ABLVariable[];
 
     get allFields(): ABLVariable[] {
-        if (this.referenceFields)
+        if (this.referenceFields) {
             return [...this.referenceFields, ...this.fields];
+        }
         return this.fields;
     }
 }

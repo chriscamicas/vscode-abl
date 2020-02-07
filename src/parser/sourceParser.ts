@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 enum CommentType { SingleLine, MultiLine }
 
@@ -12,9 +12,9 @@ export interface SourceCode {
 export class SourceParser {
 
     public getSourceCode(document: vscode.TextDocument): SourceCode {
-        let source = document.getText();
+        const source = document.getText();
 
-        let code: SourceCode = { document: document, fullSource: source, sourceWithoutComments: '', sourceWithoutStrings: '' };
+        const code: SourceCode = { document: document, fullSource: source, sourceWithoutComments: '', sourceWithoutStrings: '' };
 
         let prevChar: string = '';
         let nextChar: string = '';
@@ -26,84 +26,78 @@ export class SourceParser {
         let stringChar: string = null;
         let charWOComments;
         let charWOStrings;
-		
+
         for (let i = 0; i < source.length; i++) {
-			
+
             thisChar = source[i];
             nextChar = source[i + 1];
-			prevChar = source[i - 1];
+            prevChar = source[i - 1];
             charWOComments = thisChar;
             charWOStrings = thisChar;
-			
-			switch (thisChar) {
+
+            switch (thisChar) {
                 case '/':
                     if (!inString) {
                         // If we are not in a comment
-                        if (!inComment && nextChar == '/' || prevChar == '/') {
+                        if (!inComment && nextChar === '/' || prevChar === '/') {
                             inComment = true;
                             commentType = CommentType.SingleLine;
                             charWOComments = ' ';
                             charWOStrings = ' ';
-                        } else if (!inComment && nextChar == '*') {
+                        } else if (!inComment && nextChar === '*') {
                             inComment = true;
                             commentType = CommentType.MultiLine;
                             charWOComments = ' ';
                             charWOStrings = ' ';
-                        }
-                        // If we are in a comment and it is multiline
-                        else if (inComment && commentType == CommentType.MultiLine && prevChar == '*') {
+                        } else if (inComment && commentType === CommentType.MultiLine && prevChar === '*') {
                             inComment = false;
                             commentType = null;
                             charWOComments = ' ';
                             charWOStrings = ' ';
-                        }
-                        else if (inComment) {
+                        } else if (inComment) {
                             charWOComments = ' ';
                             charWOStrings = ' ';
                         }
-                    }
-                    else {
+                    } else {
                         charWOStrings = ' ';
                     }
-					break;
+                    break;
                 case '\n':
-                    if (inComment && commentType == CommentType.SingleLine) {
+                    if (inComment && commentType === CommentType.SingleLine) {
                         inComment = false;
                         commentType = null;
                     }
-					break;
+                    break;
                 case '"':
                 case '\'':
                     if (!inComment) {
                         charWOStrings = ' ';
-                        if (stringChar == thisChar && inString && prevChar != '~') {
+                        if (stringChar === thisChar && inString && prevChar !== '~') {
                             inString = false;
                             stringChar = null;
                         } else if (stringChar === null && !inString && !inComment) {
                             inString = true;
                             stringChar = thisChar;
                         }
-                    }
-                    else {
+                    } else {
                         charWOComments = ' ';
                         charWOStrings = ' ';
                     }
-					break;
+                    break;
                 default:
                     if (inComment) {
                         charWOComments = ' ';
                         charWOStrings = ' ';
-                    }
-                    else if(inString) {
+                    } else if (inString) {
                         charWOStrings = ' ';
                     }
                     break;
             }
             code.sourceWithoutComments += charWOComments;
             code.sourceWithoutStrings += charWOStrings;
-		}
-		
-		return code;
+        }
+
+        return code;
     }
 
 }

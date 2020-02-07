@@ -1,26 +1,28 @@
-import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
+import * as vscode from 'vscode';
 
-import { getProwinBin, createProArgs, getProBin, setupEnvironmentVariables } from './shared/ablPath';
-import { getOpenEdgeConfig, genericWorkspaceFolder } from './ablConfig';
-import { create } from './OutputChannelProcess';
+import { genericWorkspaceFolder, getOpenEdgeConfig } from './ablConfig';
 import { outputChannel } from './ablStatus';
+import { create } from './OutputChannelProcess';
+import { createProArgs, getProBin, getProwinBin, setupEnvironmentVariables } from './shared/ablPath';
 
 function genericPath(): string {
     if (vscode.window.activeTextEditor) {
-        let folder = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
-        if (folder)
+        const folder = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
+        if (folder) {
             return folder.uri.fsPath;
+        }
     }
-    if (genericWorkspaceFolder)
+    if (genericWorkspaceFolder) {
         return genericWorkspaceFolder.uri.fsPath;
+    }
     return vscode.workspace.rootPath;
 }
 
 export function openDataDictionary() {
-    let cwd = genericPath();
-    let env = process.env;
+    const cwd = genericPath();
+    const env = process.env;
 
     return getOpenEdgeConfig().then((oeConfig) => {
         const cmd = getProwinBin(oeConfig.dlc);
@@ -36,15 +38,15 @@ export function openDataDictionary() {
 
 export function readDataDictionary(ablConfig: vscode.WorkspaceConfiguration) {
     return getOpenEdgeConfig().then((oeConfig) => {
-        let cmd = getProBin(oeConfig.dlc);
-        let env = setupEnvironmentVariables(process.env, oeConfig, genericPath());
-        let dbs = (oeConfig.dbDictionary ? oeConfig.dbDictionary.join(',') : '');
-        let args = createProArgs({
-            parameterFiles: oeConfig.parameterFiles,
+        const cmd = getProBin(oeConfig.dlc);
+        const env = setupEnvironmentVariables(process.env, oeConfig, genericPath());
+        const dbs = (oeConfig.dbDictionary ? oeConfig.dbDictionary.join(',') : '');
+        const args = createProArgs({
             batchMode: true,
-            startupProcedure: path.join(__dirname, '../../abl-src/dict-dump.p'),
             param: dbs,
-            workspaceRoot: genericPath()
+            parameterFiles: oeConfig.parameterFiles,
+            startupProcedure: path.join(__dirname, '../../abl-src/dict-dump.p'),
+            workspaceRoot: genericPath(),
         });
         let cwd = genericPath();
         cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', genericPath()).replace('${workspaceFolder}', genericPath()) : cwd;

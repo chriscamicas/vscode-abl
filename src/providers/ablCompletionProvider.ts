@@ -3,8 +3,8 @@ import * as util from 'util';
 import * as vscode from 'vscode';
 import { ABL_MODE } from '../ablMode';
 import { ABLTableDefinition } from '../misc/definition';
-import { ABLDocumentController, getDocumentController } from '../parser/documentController';
 import { getText, replaceSnippetTableName, updateTableCompletionList } from '../misc/utils';
+import { ABLDocumentController, getDocumentController } from '../parser/documentController';
 
 let watcher: vscode.FileSystemWatcher = null;
 const _tableCollection: vscode.CompletionList = new vscode.CompletionList();
@@ -26,17 +26,18 @@ export class ABLCompletionItemProvider implements vscode.CompletionItemProvider 
             try {
                 const completionItemResult: vscode.CompletionItem[] = [];
 
-                let doc = this._ablDocumentController.getDocument(document);
-                let p = new vscode.Position(position.line, position.character - 1); // get the previous char to compare previous statement
-                let textSelection = getText(document, p, true);
-                let tsParts = textSelection.statement.split('.');
+                const doc = this._ablDocumentController.getDocument(document);
+                const p = new vscode.Position(position.line, position.character - 1); // get the previous char to compare previous statement
+                const textSelection = getText(document, p, true);
+                const tsParts = textSelection.statement.split('.');
 
                 if (tsParts.length === 2) {
                     // translate buffer var/param
                     let originalName = tsParts[0];
                     tsParts[0] = (doc.searchBuffer(tsParts[0], position) || tsParts[0]);
-                    if (originalName == tsParts[0])
+                    if (originalName === tsParts[0]) {
                         originalName = null;
+                    }
                     //
                     let result = this.getCompletionFields(tsParts[0], originalName);
                     if ((result) && (result.length > 0)) {
@@ -50,9 +51,9 @@ export class ABLCompletionItemProvider implements vscode.CompletionItemProvider 
                     }
 
                     // External Temp-tables
-                    doc.externalDocument.forEach(external => {
-                        if ((!result) || (result.length == 0)) {
-                            let extDoc = this._ablDocumentController.getDocument(external);
+                    doc.externalDocument.forEach((external) => {
+                        if ((!result) || (result.length === 0)) {
+                            const extDoc = this._ablDocumentController.getDocument(external);
                             if ((extDoc) && (extDoc.processed)) {
                                 result = extDoc.getCompletionTempTableFields(tsParts[0], originalName);
                             }
@@ -62,16 +63,15 @@ export class ABLCompletionItemProvider implements vscode.CompletionItemProvider 
                         resolve(result);
                         return;
                     }
-                }
-                else if (tsParts.length == 1) {
+                } else if (tsParts.length === 1) {
                     // Tables
-                    let tb = _tableCollection.items;
+                    const tb = _tableCollection.items;
                     // Symbols
-                    let docSym = doc.getCompletionSymbols(position);
+                    const docSym = doc.getCompletionSymbols(position);
                     // External Symbols
                     let extSym: vscode.CompletionItem[] = [];
-                    doc.externalDocument.forEach(external => {
-                        let extDoc = this._ablDocumentController.getDocument(external);
+                    doc.externalDocument.forEach((external) => {
+                        const extDoc = this._ablDocumentController.getDocument(external);
                         if ((extDoc) && (extDoc.processed)) {
                             extSym = [...extSym, ...extDoc.getCompletionSymbols(position)];
                         }

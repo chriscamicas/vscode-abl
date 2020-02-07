@@ -1,17 +1,17 @@
 import * as vscode from 'vscode';
 import { CheckResult, checkSyntax, removeSyntaxStatus } from './ablCheckSyntax';
-import { ABLCompletionItemProvider, getTableCollection, watchDictDumpFiles } from './providers/ablCompletionProvider';
 import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
-import { ABLSymbolProvider } from './providers/ablSymbolProvider';
 import { ABL_MODE } from './ablMode';
 import { run } from './ablRun';
 import { ablTest } from './ablTest';
 import { checkOpenEdgeConfigFile, checkProgressBinary } from './checkExtensionConfig';
 import { AblDebugConfigurationProvider } from './debugAdapter/ablDebugConfigurationProvider';
-import { ABLDefinitionProvider } from './providers/ablDefinitionProvider';
-import { ABLHoverProvider } from './providers/ablHoverProvider';
-import { ABLFormattingProvider } from './providers/ablFormattingProvider';
 import { initDocumentController } from './parser/documentController';
+import { ABLCompletionItemProvider, getTableCollection, watchDictDumpFiles } from './providers/ablCompletionProvider';
+import { ABLDefinitionProvider } from './providers/ablDefinitionProvider';
+import { ABLFormattingProvider } from './providers/ablFormattingProvider';
+import { ABLHoverProvider } from './providers/ablHoverProvider';
+import { ABLSymbolProvider } from './providers/ablSymbolProvider';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
 let warningDiagnosticCollection: vscode.DiagnosticCollection;
@@ -33,7 +33,6 @@ export function activate(ctx: vscode.ExtensionContext): void {
 
 }
 
-
 function registerCommands(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
         // let gopath = process.env['GOPATH'];
@@ -48,7 +47,7 @@ function registerCommands(ctx: vscode.ExtensionContext) {
         openDataDictionary();
     }));
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.dictionary.dumpDefinition', () => {
-        let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+        const ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
         readDataDictionary(ablConfig);
     }));
 
@@ -68,10 +67,10 @@ function registerCommands(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.tables', () => {
-        return getTableCollection().items.map(item => item.label);
+        return getTableCollection().items.map((item) => item.label);
     }));
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.table', (tableName) => {
-        return getTableCollection().items.find(item => item.label == tableName);
+        return getTableCollection().items.find((item) => item.label === tableName);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.debug.startSession', (config) => {

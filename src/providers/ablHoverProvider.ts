@@ -1,11 +1,11 @@
-import * as vscode from 'vscode';
-import { HoverProvider, ProviderResult, Hover, TextDocument, Position, CancellationToken } from "vscode";
-import * as utils from '../misc/utils';
-import { ABLDocumentController, getDocumentController } from "../parser/documentController";
-import { getTableCollection } from "./ablCompletionProvider";
-import { ABLFieldDefinition, ABLTableDefinition, ABL_ASLIKE, SYMBOL_TYPE, ABLTempTable, ABLVariable, ABLMethod, ABLParameter } from '../misc/definition';
-import { ABL_MODE } from '../ablMode';
 import { isNullOrUndefined } from 'util';
+import * as vscode from 'vscode';
+import { CancellationToken, Hover, HoverProvider, Position, ProviderResult, TextDocument } from 'vscode';
+import { ABL_MODE } from '../ablMode';
+import { ABL_ASLIKE, ABLFieldDefinition, ABLMethod, ABLParameter, ABLTableDefinition, ABLTempTable, ABLVariable, SYMBOL_TYPE } from '../misc/definition';
+import * as utils from '../misc/utils';
+import { ABLDocumentController, getDocumentController } from '../parser/documentController';
+import { getTableCollection } from './ablCompletionProvider';
 
 export class ABLHoverProvider implements HoverProvider {
     private _ablDocumentController: ABLDocumentController;
@@ -15,80 +15,86 @@ export class ABLHoverProvider implements HoverProvider {
         context.subscriptions.push(vscode.languages.registerHoverProvider(ABL_MODE.language, this));
     }
 
-    provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
-        let doc = this._ablDocumentController.getDocument(document);
-        let selection = utils.getText(document, position);
-        if (!selection)
+    public provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+        const doc = this._ablDocumentController.getDocument(document);
+        const selection = utils.getText(document, position);
+        if (!selection) {
             return;
-        let split = selection.statement.split(/[\.\:\s\t]/);
-        if (split.length == 0)
+        }
+        const split = selection.statement.split(/[\.\:\s\t]/);
+        if (split.length === 0) {
             return;
-        let words = utils.cleanArray(split);
+        }
+        const words = utils.cleanArray(split);
         if (words.length > 0) {
-            if ((words.length == 1) ||
-                ((words.length > 1) && (selection.word == words[0]))) {
+            if ((words.length === 1) ||
+                ((words.length > 1) && (selection.word === words[0]))) {
                 // check for table collection
-                let tb = getTableCollection().items.find(item => item.label.toLocaleLowerCase() == selection.word);
+                const tb = getTableCollection().items.find((item) => item.label.toLocaleLowerCase() === selection.word);
                 if (tb) {
-                    let tbd = <ABLTableDefinition>tb;
+                    const tbd = tb as ABLTableDefinition;
                     return new Hover([selection.word, '*' + tb.detail + '*', 'PK: ' + tbd.pkList], selection.wordRange);
                 }
-            }
-            else {
+            } else {
                 // translate buffer var/param
                 words[0] = (doc.searchBuffer(words[0], position) || words[0]);
                 // check for table.field collection
-                let tb = getTableCollection().items.find(item => item.label == words[0]);
+                const tb = getTableCollection().items.find((item) => item.label === words[0]);
                 if (tb) {
-                    let fdLst = <ABLFieldDefinition[]>tb['fields'];
-                    let fd = fdLst.find(item => item.label == words[1]);
-                    if (fd)
+                    // tslint:disable-next-line:no-string-literal
+                    const fdLst = tb['fields'] as ABLFieldDefinition[];
+                    const fd = fdLst.find((item) => item.label === words[1]);
+                    if (fd) {
                         return new Hover([selection.statement, '*' + fd.detail + '*', 'Type: ' + fd.dataType, 'Format: ' + fd.format], selection.statementRange);
-                    else
+                    } else {
                         return;
+                    }
                 }
             }
         }
 
-        let symbol = doc.searchSymbol(words, selection.word, position, true);
+        const symbol = doc.searchSymbol(words, selection.word, position, true);
         if (!isNullOrUndefined(symbol)) {
-            if (symbol.type == SYMBOL_TYPE.TEMPTABLE) {
-                let tt = <ABLTempTable>(symbol.value);
+            if (symbol.type === SYMBOL_TYPE.TEMPTABLE) {
+                const tt = (symbol.value) as ABLTempTable;
                 return new Hover([selection.word, 'Temp-table *' + tt.label + '*'], selection.wordRange);
             }
-            if (symbol.type == SYMBOL_TYPE.TEMPTABLE_FIELD) {
-                let tt = <ABLTempTable>(symbol.origin);
-                let tf = <ABLVariable>(symbol.value);
+            if (symbol.type === SYMBOL_TYPE.TEMPTABLE_FIELD) {
+                const tt = (symbol.origin) as ABLTempTable;
+                const tf = (symbol.value) as ABLVariable;
                 return new Hover([selection.word, 'Field *' + tf.name + '*', 'from temp-table *' + tt.label + '*'], selection.wordRange);
             }
-            if (symbol.type == SYMBOL_TYPE.METHOD) {
-                let mt = <ABLMethod>(symbol.value);
+            if (symbol.type === SYMBOL_TYPE.METHOD) {
+                const mt = (symbol.value) as ABLMethod;
                 return new Hover([selection.word, 'Method *' + mt.name + '*'], selection.wordRange);
             }
-            if (symbol.type == SYMBOL_TYPE.GLOBAL_VAR) {
-                let gv = <ABLVariable>(symbol.value);
-                if (gv.dataType == 'buffer')
+            if (symbol.type === SYMBOL_TYPE.GLOBAL_VAR) {
+                const gv = (symbol.value) as ABLVariable;
+                if (gv.dataType === 'buffer') {
                     return new Hover([selection.word, 'Global buffer *' + gv.name + '*', 'for table *' + gv.additional + '*'], selection.wordRange);
-                else
+                } else {
                     return new Hover([selection.word, 'Global variable *' + gv.name + '*'], selection.wordRange);
+                }
             }
-            if (symbol.type == SYMBOL_TYPE.LOCAL_PARAM) {
-                let mt = <ABLMethod>(symbol.origin);
-                let lp = <ABLParameter>(symbol.value);
-                if (lp.dataType == 'temp-table')
+            if (symbol.type === SYMBOL_TYPE.LOCAL_PARAM) {
+                const mt = (symbol.origin) as ABLMethod;
+                const lp = (symbol.value) as ABLParameter;
+                if (lp.dataType === 'temp-table') {
                     return new Hover([selection.word, 'Local temp-table parameter *' + lp.name + '*', 'from method *' + mt.name + '*'], selection.wordRange);
-                else if (lp.dataType == 'buffer')
+                } else if (lp.dataType === 'buffer') {
                     return new Hover([selection.word, 'Local buffer parameter *' + lp.name + '*', 'for table *' + lp.additional + '*', 'from method *' + mt.name + '*'], selection.wordRange);
-                else
+ } else {
                     return new Hover([selection.word, 'Local parameter *' + lp.name + '*', 'from method *' + mt.name + '*'], selection.wordRange);
+ }
             }
-            if (symbol.type == SYMBOL_TYPE.LOCAL_VAR) {
-                let mt = <ABLMethod>(symbol.origin);
-                let lv = <ABLVariable>(symbol.value);
-                if (lv.dataType == 'buffer')
+            if (symbol.type === SYMBOL_TYPE.LOCAL_VAR) {
+                const mt = (symbol.origin) as ABLMethod;
+                const lv = (symbol.value) as ABLVariable;
+                if (lv.dataType === 'buffer') {
                     return new Hover([selection.word, 'Local buffer *' + lv.name + '*', 'for table *' + lv.additional + '*', 'from method *' + mt.name + '*'], selection.wordRange);
-                else
+                } else {
                     return new Hover([selection.word, 'Local variable *' + lv.name + '*', 'from method *' + mt.name + '*'], selection.wordRange);
+                }
             }
         }
 

@@ -16,12 +16,12 @@ export class SourceParser {
 
         const code: SourceCode = { document: document, fullSource: source, sourceWithoutComments: '', sourceWithoutStrings: '' };
 
-        let prevChar: string = '';
-        let nextChar: string = '';
-        let thisChar: string = '';
+        let prevChar = '';
+        let nextChar = '';
+        let thisChar = '';
 
-        let inString: boolean = false;
-        let inComment: boolean = false;
+        let inString = false;
+        let inComment = false;
         let commentType: CommentType = null;
         let stringChar: string = null;
         let charWOComments;

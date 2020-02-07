@@ -2,7 +2,7 @@ import { isNullOrUndefined } from 'util';
 import * as vscode from 'vscode';
 import { CancellationToken, Hover, HoverProvider, Position, ProviderResult, TextDocument } from 'vscode';
 import { ABL_MODE } from '../ablMode';
-import { ABL_ASLIKE, ABLFieldDefinition, ABLMethod, ABLParameter, ABLTableDefinition, ABLTempTable, ABLVariable, SYMBOL_TYPE } from '../misc/definition';
+import { ABLFieldDefinition, ABLMethod, ABLParameter, ABLTableDefinition, ABLTempTable, ABLVariable, SYMBOL_TYPE } from '../misc/definition';
 import * as utils from '../misc/utils';
 import { ABLDocumentController, getDocumentController } from '../parser/documentController';
 import { getTableCollection } from './ablCompletionProvider';
@@ -21,7 +21,7 @@ export class ABLHoverProvider implements HoverProvider {
         if (!selection) {
             return;
         }
-        const split = selection.statement.split(/[\.\:\s\t]/);
+        const split = selection.statement.split(/[.:\s\t]/);
         if (split.length === 0) {
             return;
         }

@@ -87,7 +87,7 @@ class PatternFormat {
             this.char = source[i];
             this.next = source[i + 1];
             this.prev = source[i - 1];
-            this.words = this.cleanArray(line.split(/[\s\(\)\[\];|'"\{\}\.\t\n]/));
+            this.words = this.cleanArray(line.split(/[\s()[\];|'"{}.\t\n]/));
             // this.words = this.cleanArray(s.split(/[\s\(\)\[\];|'"\{\}\.\t\n]/));
             // this.words = this.cleanArray(textWords.split(/[\s\(\)\[\];|'"\{\}\.\t\n]/));
             this.last = this.words[this.words.length - 1];
@@ -248,8 +248,8 @@ class PatternFormat {
                     // s += this.char;
                     line += this.char;
                     break;
-                case ',':
-                case ':':
+                case ',':  
+                            //    case ':':
                     if (inString || inComment) {
                         // s += this.char;
                         line += this.char;
@@ -279,8 +279,8 @@ class PatternFormat {
                 case '+':
                 case '-':
                 case '*':
-                case '/':
-                case '%':
+                // case '/':
+                // case '%':
                     if (inString || inComment) {
                         // s += this.char;
                         line += this.char;
@@ -381,11 +381,11 @@ class PatternFormat {
                 spaces.before = config.get<number>('space.not.before', 1);
                 spaces.after = config.get<number>('space.not.after', 1);
                 break;
-            case '=':
+            case '?':
                 spaces.before = config.get<number>('space.question.before', 1);
                 spaces.after = config.get<number>('space.question.after', 1);
                 break;
-            case '=':
+            case ':':
                 spaces.before = config.get<number>('space.colon.before', 1);
                 spaces.after = config.get<number>('space.colon.after', 1);
                 break;

@@ -8,7 +8,7 @@ import { createProArgs, getProBin, setupEnvironmentVariables } from './shared/ab
 const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 // statusBarItem.command = 'abl.checkSyntax.showOutput';
 
-export function removeSyntaxStatus() {
+export function removeSyntaxStatus(): void {
     statusBarItem.hide();
     statusBarItem.text = '';
 }

@@ -23,7 +23,7 @@ export class ABLDefinitionProvider implements vscode.DefinitionProvider {
         if (!doc.processed) {
             return;
         }
-        const split = selection.statement.split(/[\.\:\s\t]/);
+        const split = selection.statement.split(/[.:\s\t]/);
         if (split.length === 0) {
             return;
         }

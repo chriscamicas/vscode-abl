@@ -2,8 +2,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { OpenEdgeConfig } from './openEdgeConfigFile';
 
-export function getBinPath(toolName: string, dlcPath?: string) {
-    const dlc = dlcPath || process.env.DLC;
+export function getBinPath(toolName: string, dlcPath?: string | string[]) {
+    let dlc;
+    // Use first available folder in array of possible locations
+    // This enables support for multiple versions
+    if (dlcPath instanceof Array) {
+        dlcPath.some((p) => {
+            if (fs.existsSync(p)) {
+                dlc = p;
+                return;
+            }
+        });
+        if (!dlc) dlc = process.env.DLC;
+    } else {
+        dlc = dlcPath || process.env.DLC;
+    }
     if (dlc) {
         return path.join(dlc, 'bin', toolName);
     }

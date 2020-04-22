@@ -13,7 +13,9 @@ export function getBinPath(toolName: string, dlcPath?: string | string[]) {
                 return;
             }
         });
-        if (!dlc) dlc = process.env.DLC;
+        if (!dlc) {
+            dlc = process.env.DLC;
+        }
     } else {
         dlc = dlcPath || process.env.DLC;
     }

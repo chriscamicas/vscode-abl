@@ -1,13 +1,17 @@
 import * as vscode from 'vscode';
 import { CheckResult, checkSyntax, removeSyntaxStatus } from './ablCheckSyntax';
-import { AblCompletionItemProvider } from './ablCompletionProvider';
-import { openDataDictionary } from './ablDataDictionary';
-import { AblDocumentSymbolProvider } from './ablDefinitionProvider';
+import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
 import { ABL_MODE } from './ablMode';
 import { run } from './ablRun';
 import { ablTest } from './ablTest';
 import { checkOpenEdgeConfigFile, checkProgressBinary } from './checkExtensionConfig';
 import { AblDebugConfigurationProvider } from './debugAdapter/ablDebugConfigurationProvider';
+import { initDocumentController } from './parser/documentController';
+import { ABLCompletionItemProvider, getTableCollection, watchDictDumpFiles } from './providers/ablCompletionProvider';
+import { ABLDefinitionProvider } from './providers/ablDefinitionProvider';
+import { ABLFormattingProvider } from './providers/ablFormattingProvider';
+import { ABLHoverProvider } from './providers/ablHoverProvider';
+import { ABLSymbolProvider } from './providers/ablSymbolProvider';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
 let warningDiagnosticCollection: vscode.DiagnosticCollection;
@@ -21,7 +25,15 @@ export function activate(ctx: vscode.ExtensionContext): void {
     ctx.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('abl', new AblDebugConfigurationProvider()));
 
     startBuildOnSaveWatcher(ctx.subscriptions);
+    startDictWatcher();
+    startDocumentWatcher(ctx);
 
+    initProviders(ctx);
+    registerCommands(ctx);
+
+}
+
+function registerCommands(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
         // let gopath = process.env['GOPATH'];
         // let wasInfered = vscode.workspace.getConfiguration('go')['inferGopath'];
@@ -33,6 +45,10 @@ export function activate(ctx: vscode.ExtensionContext): void {
     }));
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.dataDictionary', () => {
         openDataDictionary();
+    }));
+    ctx.subscriptions.push(vscode.commands.registerCommand('abl.dictionary.dumpDefinition', () => {
+        const ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+        readDataDictionary(ablConfig);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.run.currentFile', () => {
@@ -48,6 +64,13 @@ export function activate(ctx: vscode.ExtensionContext): void {
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.test.currentFile', () => {
         const ablConfig = vscode.workspace.getConfiguration('abl');
         ablTest(vscode.window.activeTextEditor.document.uri.fsPath, ablConfig);
+    }));
+
+    ctx.subscriptions.push(vscode.commands.registerCommand('abl.tables', () => {
+        return getTableCollection().items.map((item) => item.label);
+    }));
+    ctx.subscriptions.push(vscode.commands.registerCommand('abl.table', (tableName) => {
+        return getTableCollection().items.find((item) => item.label === tableName);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.debug.startSession', (config) => {
@@ -71,16 +94,6 @@ export function activate(ctx: vscode.ExtensionContext): void {
     ctx.subscriptions.push(errorDiagnosticCollection);
     warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-warning');
     ctx.subscriptions.push(warningDiagnosticCollection);
-
-    // Document Symbol Provider, provides Symbols for the Outliner
-    ctx.subscriptions.push(
-        vscode.languages.registerDocumentSymbolProvider(
-            ABL_MODE, new AblDocumentSymbolProvider()));
-
-    // Completion Provider, provides elements for Code completion
-    ctx.subscriptions.push(
-        vscode.languages.registerCompletionItemProvider(
-            ABL_MODE, new AblCompletionItemProvider(), '.', '\"'));
 
     {
         const ablConfig = vscode.workspace.getConfiguration('abl');
@@ -112,6 +125,17 @@ export function activate(ctx: vscode.ExtensionContext): void {
 
 function deactivate() {
     // no need for deactivation yet
+}
+
+function initProviders(context: vscode.ExtensionContext) {
+    new ABLCompletionItemProvider(context);
+    new ABLHoverProvider(context);
+    new ABLDefinitionProvider(context);
+    new ABLSymbolProvider(context);
+    new ABLFormattingProvider(context);
+}
+function startDocumentWatcher(context: vscode.ExtensionContext) {
+    initDocumentController(context);
 }
 
 function runBuilds(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration) {
@@ -189,4 +213,8 @@ function startBuildOnSaveWatcher(subscriptions: vscode.Disposable[]) {
     vscode.window.onDidChangeActiveTextEditor((_) => {
         removeSyntaxStatus();
     }, null, subscriptions);
+}
+
+function startDictWatcher() {
+    watchDictDumpFiles();
 }

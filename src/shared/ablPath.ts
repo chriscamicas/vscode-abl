@@ -96,6 +96,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
         }
     }
     env.VSABL_SRC = path.join(__dirname, '../../abl-src');
+    env.VSABL_WORKSPACE = workspaceRoot;
     // enable the debugger
     // cf https://documentation.progress.com/output/ua/OpenEdge_latest/index.html#page/pdsoe/enabling-debugging.html
     env.ENABLE_OPENEDGE_DEBUGGER = 1;
@@ -103,7 +104,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
     return env;
 }
 
-export function expandPathVariables(pathToExpand: string, env: any, variables: {[key: string]: string}): string {
+export function expandPathVariables(pathToExpand: string, env: any, variables: { [key: string]: string }): string {
     // format VSCode ${env:VAR}
     // path = path.replace(/\${env:([^}]+)}/g, (_, n) => {
     //     return env[n];

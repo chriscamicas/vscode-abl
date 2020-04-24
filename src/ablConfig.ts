@@ -1,12 +1,15 @@
-import { FileSystemWatcher, window, workspace } from 'vscode';
+import { isNullOrUndefined } from 'util';
+import { FileSystemWatcher, workspace, WorkspaceFolder } from 'vscode';
 import { loadConfigFile, OPENEDGE_CONFIG_FILENAME, OpenEdgeConfig } from './shared/openEdgeConfigFile';
 
 let openEdgeConfig: OpenEdgeConfig = null;
 let watcher: FileSystemWatcher = null;
+export let genericWorkspaceFolder: WorkspaceFolder = null;
 
 export function findConfigFile() {
     return workspace.findFiles(OPENEDGE_CONFIG_FILENAME).then((uris) => {
         if (uris.length > 0) {
+            genericWorkspaceFolder = workspace.getWorkspaceFolder(uris[0]);
             return uris[0].fsPath;
         }
         return null;

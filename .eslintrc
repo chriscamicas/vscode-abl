@@ -1,0 +1,41 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "plugin:@typescript-eslint/eslint-recommended"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+                "vars": "all",
+                "args": "none",
+                "ignoreRestSiblings": false
+            }
+        ],
+        "@typescript-eslint/no-use-before-define": [
+            "warn",
+            {
+                "functions": true,
+                "classes": true
+            }
+        ],
+        "@typescript-eslint/interface-name-prefix": 0,
+        "@typescript-eslint/no-inferrable-types": 0
+    }
+}

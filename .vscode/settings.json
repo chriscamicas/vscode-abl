@@ -13,5 +13,9 @@
         "**/node_modules": true,
         "**/bower_components": true,
         "out": true
-    }
+    },
+    "eslint.format.enable": true,
+    "eslint.alwaysShowStatus": true,
+    "eslint.lintTask.enable": true,
+    "eslint.enable": true
 }

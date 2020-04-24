@@ -8,7 +8,7 @@
 import * as vscode from 'vscode';
 import { ABL_MODE } from './ablMode';
 
-export let outputChannel = vscode.window.createOutputChannel('ABL');
+export const outputChannel = vscode.window.createOutputChannel('ABL');
 
 let statusBarEntry: vscode.StatusBarItem;
 

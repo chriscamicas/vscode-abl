@@ -10,17 +10,17 @@ pool:
   vmImage: 'Ubuntu-16.04'
 
 steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '10.x'
+    displayName: 'Install Node.js'
 
-- script: |
-    npm install
-    npm run lint
-  displayName: 'checking lint'
-
-# - script: |
-#     npm install
-#     npm run test
-#   displayName: 'running tests'
+  - script: |
+      npm install
+      npm run lint
+    displayName: 'checking lint'
+  
+  - script: |
+      export NPM_TOKEN="$(npm_token)""
+      npm publish
+    displayName: 'publishing to npm registry'

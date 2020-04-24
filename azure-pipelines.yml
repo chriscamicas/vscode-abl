@@ -19,8 +19,3 @@ steps:
       npm install
       npm run lint
     displayName: 'checking lint'
-  
-  - script: |
-      export NPM_TOKEN="$(npm_token)""
-      npm publish
-    displayName: 'publishing to npm registry'

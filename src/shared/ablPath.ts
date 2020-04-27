@@ -1,6 +1,6 @@
-import * as fs from "fs";
-import * as path from "path";
-import { OpenEdgeConfig } from "./openEdgeConfigFile";
+import * as fs from 'fs';
+import * as path from 'path';
+import { OpenEdgeConfig } from './openEdgeConfigFile';
 
 export function getBinPath(toolName: string, dlcPath?: string | string[]) {
     let dlc;
@@ -20,20 +20,20 @@ export function getBinPath(toolName: string, dlcPath?: string | string[]) {
         dlc = dlcPath || process.env.DLC;
     }
     if (dlc) {
-        return path.join(dlc, "bin", toolName);
+        return path.join(dlc, 'bin', toolName);
     }
     // dlc not set, assume the binary is in the PATH
     return toolName;
 }
 
 export function getProBin(dlcPath?: string) {
-    return getBinPath("_progres", dlcPath);
+    return getBinPath('_progres', dlcPath);
 }
 
 export function getProwinBin(dlcPath?: string) {
-    let prowin = getBinPath("prowin.exe", dlcPath);
+    let prowin = getBinPath('prowin.exe', dlcPath);
     if (!fs.existsSync(prowin)) {
-        prowin = getBinPath("prowin32.exe", dlcPath);
+        prowin = getBinPath('prowin32.exe', dlcPath);
     }
     return prowin;
 }
@@ -53,10 +53,10 @@ export function createProArgs(options: ProArgsOptions): string[] {
         // pfArgs = openEdgeConfig.parameterFiles.filter(pf => pf.trim().length > 0).map(pf => { return '-pf ' + pf; });
         pfArgs = options.parameterFiles
             .filter((pf) => pf.trim().length > 0)
-            .reduce((r, a) => r.concat("-pf", a), []);
+            .reduce((r, a) => r.concat('-pf', a), []);
         for (let i = 0; i < pfArgs.length; i++) {
             pfArgs[i] = pfArgs[i].replace(
-                "${workspaceRoot}",
+                '${workspaceRoot}',
                 options.workspaceRoot
             );
         }
@@ -67,21 +67,21 @@ export function createProArgs(options: ProArgsOptions): string[] {
         tempDir = process.env.TEMP;
     }
     if (tempDir) {
-        args.push("-T");
+        args.push('-T');
         args.push(tempDir);
     }
     args = args.concat(pfArgs);
     if (options.batchMode) {
-        args.push("-b");
+        args.push('-b');
     }
     if (options.startupProcedure) {
-        args.push("-p", options.startupProcedure);
+        args.push('-p', options.startupProcedure);
     }
     if (options.param) {
-        args.push("-param", options.param);
+        args.push('-param', options.param);
     }
     if (options.debugPort) {
-        args.push("-debugReady", options.debugPort.toString());
+        args.push('-debugReady', options.debugPort.toString());
     }
 
     return args;
@@ -98,34 +98,34 @@ export function setupEnvironmentVariables(
             !(openEdgeConfig.proPath instanceof Array) ||
             openEdgeConfig.proPath.length === 0
         ) {
-            openEdgeConfig.proPath = ["${workspaceRoot}"];
+            openEdgeConfig.proPath = ['${workspaceRoot}'];
         }
-        openEdgeConfig.proPath.push(path.join(__dirname, "../../../abl-src"));
+        openEdgeConfig.proPath.push(path.join(__dirname, '../../../abl-src'));
         const paths = openEdgeConfig.proPath.map((p) => {
-            p = p.replace("${workspaceRoot}", workspaceRoot);
-            p = p.replace("${workspaceFolder}", workspaceRoot);
+            p = p.replace('${workspaceRoot}', workspaceRoot);
+            p = p.replace('${workspaceFolder}', workspaceRoot);
             p = path.posix.normalize(p);
             return p;
         });
         // let paths = openEdgeConfig.proPath || [];
-        env.VSABL_PROPATH = paths.join(",");
+        env.VSABL_PROPATH = paths.join(',');
 
         if (openEdgeConfig.proPathMode) {
             env.VSABL_PROPATH_MODE = openEdgeConfig.proPathMode;
         } else {
-            env.VSABL_PROPATH_MODE = "append";
+            env.VSABL_PROPATH_MODE = 'append';
         }
 
         if (openEdgeConfig.startupProcedure) {
             env.VSABL_OE_STARTUP_PROCEDURE = openEdgeConfig.startupProcedure
-                .replace("${workspaceRoot}", workspaceRoot)
-                .replace("${workspaceFolder}", workspaceRoot);
+                .replace('${workspaceRoot}', workspaceRoot)
+                .replace('${workspaceFolder}', workspaceRoot);
         } else {
             // unset var; required in case user changes config
-            env.VSABL_OE_STARTUP_PROCEDURE = "";
+            env.VSABL_OE_STARTUP_PROCEDURE = '';
         }
     }
-    env.VSABL_SRC = path.join(__dirname, "../../abl-src");
+    env.VSABL_SRC = path.join(__dirname, '../../abl-src');
     env.VSABL_WORKSPACE = workspaceRoot;
     // enable the debugger
     // cf https://documentation.progress.com/output/ua/OpenEdge_latest/index.html#page/pdsoe/enabling-debugging.html

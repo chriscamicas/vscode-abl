@@ -44,6 +44,11 @@
       "id": "/properties/startupProcedure",
       "description": "Path to OpenEdge Startup Procedure",
       "type": "string"
+    },
+    "dbDictionary": {
+      "id": "/properties/dbDictionary",
+      "description": "Logical names of database files for the auto-complete option (command: ABL Read Dictionary Structure)",
+      "type": "array"
     }
   },
   "type": "object"

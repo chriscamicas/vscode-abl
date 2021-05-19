@@ -1,3 +1,7 @@
+1.1.1
+=====
+- Fix Outline for function, procedure and method with multiline syntax
+
 1.1
 =====
 - Code completion and Outline pane

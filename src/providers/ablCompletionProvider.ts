@@ -88,7 +88,7 @@ export class ABLCompletionItemProvider implements vscode.CompletionItemProvider 
 
     private getCompletionFields(prefix: string, replacement?: string): vscode.CompletionItem[] {
         // Tables
-        const tb = _tableCollection.items.find((item) => item.label.toLowerCase() === prefix);
+        const tb = _tableCollection.items.find((item) => item.label.toString().toLowerCase() === prefix);
         if (tb) {
             // tslint:disable-next-line:no-string-literal
             let result = tb['completion'].items;
@@ -146,7 +146,7 @@ function unloadDumpFile(filename: string) {
 }
 
 export function watchDictDumpFiles() {
-    return new Promise<null>((resolve, reject) => {
+    return new Promise<null | void>((resolve, reject) => {
         watcher = vscode.workspace.createFileSystemWatcher('**/.openedge.db.*');
         watcher.onDidChange((uri) => loadAndSetDumpFile(uri.fsPath));
         watcher.onDidDelete((uri) => unloadDumpFile(uri.fsPath));

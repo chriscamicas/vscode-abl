@@ -26,17 +26,19 @@ You can create a local config file for your project named `.openedge.json`, with
         "${workspaceFolder}"
     ],
     "dlc": "C:/Progress/OpenEdge", //optional override
-    "proPathMode": "append", // overwrite, prepend
+    "proPathMode": "append", // append, overwrite, prepend
     "parameterFiles": [ // -pf
         "default.pf"
     ],
+    "initializationFile": "default.ini", // -ininame
     "startupProcedure" : "${workspaceFolder}/vsc-oe-startup.p",
     "dbDictionary": [
         "myDatabaseForAutoComplete"
     ],
     "format": {
-        "trim": "right" // none
-    }
+        "trim": "right" // right, none
+    },
+    "checkSyntaxWindowExecutable": "prowin" // prowin, _progres
 }
 ```
 

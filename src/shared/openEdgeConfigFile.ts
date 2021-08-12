@@ -26,11 +26,13 @@ export interface OpenEdgeConfig {
     proPath?: string[];
     proPathMode?: 'append' | 'overwrite' | 'prepend';
     parameterFiles?: string[];
+    initializationFile?: string,
     workingDirectory?: string;
     test?: TestConfig;
     startupProcedure?: string;
     dbDictionary?: string[];
     format?: OpenEdgeFormatOptions;
+    checkSyntaxWindowExecutable?: 'prowin' | '_progres';
 }
 
 export function loadConfigFile(filename: string): Thenable<OpenEdgeConfig> {

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { getOpenEdgeConfig } from './ablConfig';
 import { outputChannel } from './ablStatus';
-import { createProArgs, getProBin, setupEnvironmentVariables } from './shared/ablPath';
+import { createProArgs, getProBin, getProwinBin, setupEnvironmentVariables } from './shared/ablPath';
 
 const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 // statusBarItem.command = 'abl.checkSyntax.showOutput';
@@ -30,12 +30,17 @@ export function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfigu
     let cwd = path.dirname(filename);
 
     return getOpenEdgeConfig().then((oeConfig) => {
-        const cmd = getProBin(oeConfig.dlc);
+        let cmd = "";
+        let regWindowFile = /^.*\.w$/
+        if (filename.match(regWindowFile) && oeConfig.checkSyntaxWindowExecutable != '_progres')
+            cmd = getProwinBin(oeConfig.dlc);
+        else cmd = getProBin(oeConfig.dlc);
         const env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
         const args = createProArgs({
             batchMode: true,
             param: filename,
             parameterFiles: oeConfig.parameterFiles,
+            initializationFile: oeConfig.initializationFile,
             startupProcedure: path.join(__dirname, '../../abl-src/check-syntax.p'),
             workspaceRoot: vscode.workspace.rootPath,
         });

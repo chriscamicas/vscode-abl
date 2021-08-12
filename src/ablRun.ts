@@ -16,6 +16,7 @@ export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration):
             batchMode: true,
             param: filename,
             parameterFiles: oeConfig.parameterFiles,
+            initializationFile: oeConfig.initializationFile,
             startupProcedure: path.join(__dirname, '../../abl-src/run.p'),
             workspaceRoot: vscode.workspace.rootPath,
         });

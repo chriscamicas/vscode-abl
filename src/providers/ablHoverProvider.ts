@@ -30,7 +30,7 @@ export class ABLHoverProvider implements HoverProvider {
             if ((words.length === 1) ||
                 ((words.length > 1) && (selection.word === words[0]))) {
                 // check for table collection
-                const tb = getTableCollection().items.find((item) => item.label.toLocaleLowerCase() === selection.word);
+                const tb = getTableCollection().items.find((item) => item.label.toString().toLocaleLowerCase() === selection.word);
                 if (tb) {
                     const tbd = tb as ABLTableDefinition;
                     return new Hover([selection.word, '*' + tb.detail + '*', 'PK: ' + tbd.pkList], selection.wordRange);

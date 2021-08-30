@@ -90,10 +90,9 @@ function mapIndexCompletionList(table: ABLTableDefinition, list: ABLIndexDefinit
 
 function mapAdditionalCompletionList(table: ABLTableDefinition): vscode.CompletionList {
     const result = new vscode.CompletionList();
-    let item;
 
     // ALL FIELDS
-    item = new vscode.CompletionItem('>ALL FIELDS', vscode.CompletionItemKind.Snippet);
+    const item = new vscode.CompletionItem('>ALL FIELDS', vscode.CompletionItemKind.Snippet);
     item.insertText = getAllFieldsSnippet(table);
     item.detail = 'Insert all table fields';
     result.items.push(item);

@@ -10,10 +10,34 @@
       },
       "type": "array"
     },
+    "OpenEdgeVersion": {
+      "id": "/properties/oeversion",
+      "description": "OpenEdge version for this project",
+      "enum": [
+        "9.1E",
+        "10.2B",
+        "11.5",
+        "11.6",
+        "11.7",
+        "12.2",
+        "12.4",
+        "ESAP"
+      ],
+      "type": "string"
+    },
+    "gui": {
+      "id": "/properties/gui",
+      "description": "Use prowin or _progres to start OpenEdge sessions",
+      "default": false,
+      "type": "boolean"
+    },
     "dlc": {
       "id": "/properties/dlc",
-      "description": "Path to Progress OpenEdge installation (if not set use ENVVAR $DLC)",
-      "type": ["string", "array"]
+      "description": "*** DEPRECATED *** Path to Progress OpenEdge installation (if not set use ENVVAR $DLC)",
+      "type": [
+        "string",
+        "array"
+      ]
     },
     "proPath": {
       "id": "/properties/proPath",

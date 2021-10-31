@@ -260,6 +260,46 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Check if Progress binaries are accessible"
+                },
+                "abl.configuration.runtimes": {
+                    "type": "array",
+                    "description": "Map OpenEdge Execution Environments to local installation",
+                    "items": {
+                        "type": "object",
+                        "default": {},
+                        "required": [
+                            "path",
+                            "name"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "enum": [
+                                    "9.1E",
+                                    "10.2B",
+                                    "11.5",
+                                    "11.6",
+                                    "11.7",
+                                    "12.2",
+                                    "12.4",
+                                    "ESAP"
+                                ],
+                                "description": "OpenEdge Execution Environment name. Must be unique."
+                            },
+                            "path": {
+                                "type": "string",
+                                "pattern": ".*(?<!\\/bin|\\/bin\\/|\\\\bin|\\\\bin\\\\)$",
+                                "description": "OpenEdge home directory.\n On Windows, backslashes must be escaped, i.e.\n\"path\":\"C:\\\\Progress\\\\OpenEdge-12.2\"."
+                            },
+                            "default": {
+                                "type": "boolean",
+                                "description": "Is default runtime? Only one runtime can be default."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "default": [],
+                    "scope": "machine"
                 }
             }
         },

@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { CancellationToken, DocumentFormattingEditProvider, FormattingOptions, OnTypeFormattingEditProvider, Position, Range, TextDocument, TextEdit, workspace, WorkspaceConfiguration } from 'vscode';
-import { getOpenEdgeConfig } from '../ablConfig';
+import { OpenEdgeProjectConfig } from '../shared/openEdgeConfigFile';
 import { ABL_MODE } from '../ablMode';
+import { getProject } from '../main';
 
 export class ABLFormattingProvider implements DocumentFormattingEditProvider, OnTypeFormattingEditProvider {
 
@@ -33,7 +34,7 @@ function format(document: TextDocument, range: Range, options: FormattingOptions
         }
         // Format the document with the user specified settings
         // var newText: string = PatternFormat.document(document.getText(), options, document.languageId);
-        SpacingFormat.document(document.getText(), options, document.languageId).then((newText) => {
+        SpacingFormat.document(document.getText(), getProject(document.uri.fsPath), options, document.languageId).then((newText) => {
             // Push the edit into the result array
             result.push(new TextEdit(range, newText));
             // Return the result of the change
@@ -516,19 +517,17 @@ class PatternFormat {
 }
 
 class SpacingFormat {
-    public static document(source: string, formattingOptions: FormattingOptions, languageId: string): Promise<string> {
-        return getOpenEdgeConfig().then((oeConfig) => {
-            // trim right
-            if (oeConfig.format && oeConfig.format.trim === 'right') {
-                const lines = source.split('\n');
-                for (let i = 0; i < lines.length; i++) {
-                    lines[i] = lines[i].trimRight();
-                }
-                source = lines.join('\n');
+    public static document(source: string, oeConfig: OpenEdgeProjectConfig, formattingOptions: FormattingOptions, languageId: string): Promise<string> {
+        // trim right
+        if (oeConfig.format && oeConfig.format.trim === 'right') {
+            const lines = source.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                lines[i] = lines[i].trimRight();
             }
+            source = lines.join('\n');
+        }
 
-            return source;
-        });
+        return Promise.resolve(source);
     }
 }
 

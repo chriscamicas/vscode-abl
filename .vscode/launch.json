@@ -8,7 +8,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
+                "--extensionDevelopmentPath=${workspaceFolder}", "run_env/sample-oe-projects/project1"
             ],
             "stopOnEntry": false,
             "sourceMaps": true,

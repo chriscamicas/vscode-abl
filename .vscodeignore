@@ -1,6 +1,10 @@
-src/**/*
 .vscode/**/*
+.npm/**/*
+src/**/*
 tsconfig.json
 tslint.json
 .gitignore
 docs
+docker
+Jenkinsfile
+azure-pipelines.yml

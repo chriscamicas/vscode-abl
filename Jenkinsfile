@@ -1,0 +1,47 @@
+// Syntax check with this command line
+// curl -k -X POST -F "jenkinsfile=<Jenkinsfile" https://ci.rssw.eu/pipeline-model-converter/validate
+
+pipeline {
+  agent { label 'Linux-Office' }
+  options {
+    disableConcurrentBuilds()
+    skipDefaultCheckout()
+    timeout(time: 20, unit: 'MINUTES')
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout([$class: 'GitSCM', branches: scm.branches, extensions: scm.extensions + [[$class: 'CleanCheckout']], userRemoteConfigs: scm.userRemoteConfigs])
+      }
+    }
+
+    stage('Build') { 
+      agent {
+        docker {
+          image 'node:16'
+          args "-v ${tool name: 'SQScanner4', type: 'hudson.plugins.sonar.SonarRunnerInstallation'}:/scanner -e HOME=."
+          reuseNode true
+        }
+      }
+      steps {
+        // copyArtifacts filter: 'target/abl-lsp-0.9-SNAPSHOT-shaded.jar', fingerprintArtifacts: true, projectName: '/ABLS/Temp', selector: lastSuccessful(), target: '.'
+        withSonarQubeEnv('RSSW2') {
+          sh 'node --version && npm install vsce && node_modules/.bin/vsce package'
+        }
+        archiveArtifacts artifacts: '*.vsix'
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        script {
+          docker.withServer('unix:///var/run/docker.sock') {
+            sh 'cp *.vsix docker && docker build --no-cache -t rssw/code:latest -f docker/Dockerfile docker'
+          }
+        }
+      }
+    }
+
+  }
+}

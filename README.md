@@ -14,8 +14,12 @@ This extension provides rich OpenEdge ABL language support for Visual Studio Cod
 ![debugger demo](./docs/images/debug.gif "Debugger")
 
 ## Using
+
 ### Prerequisites
-You need to have a local OpenEdge installation, and the `DLC` environment variable should point to the installation directory (usually `C:\Progress\OpenEdge`).
+
+OpenEdge runtimes have to be declared in VSCode configuration file. Open settings -> Extensions -> ABL Configuration -> Runtimes, or modify `settings.json`:
+![Settings](docs/images/settings.png)
+
 ### Config file
 You can create a local config file for your project named `.openedge.json`, with the following structure:
 ```JSON
@@ -25,7 +29,7 @@ You can create a local config file for your project named `.openedge.json`, with
         "c:\\temp",
         "${workspaceFolder}"
     ],
-    "dlc": "C:/Progress/OpenEdge", //optional override
+    "OpenEdgeVersion": "12.2", // Reference to version number in global config
     "proPathMode": "append", // overwrite, prepend
     "parameterFiles": [ // -pf
         "default.pf"
@@ -40,8 +44,7 @@ You can create a local config file for your project named `.openedge.json`, with
 }
 ```
 
-`dlc`, `startupProcedure`, `proPath` and `workingDirectory` are optional. Default values:
-- `dlc`: uses environment variable $DLC
+`startupProcedure`, `proPath` and `workingDirectory` are optional. Default values:
 - `startupProcedure`: ''
 - `proPath`: workspaceRoot (of VSCode)
 - `workingDirectory`: folder of active source code

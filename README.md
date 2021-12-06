@@ -15,6 +15,10 @@ This extension provides rich OpenEdge ABL language support for Visual Studio Cod
 
 ## Using
 
+### Migration steps
+
+Since version XXX, the `dlc` attribute is not used anymore in `.openedge.json`. OpenEdge runtimes have to be declared in the global VSCode configuration,
+and the `OpenEdgeVersion` attribute has to reference one of those version numbers in `.openedge.json`.
 ### Prerequisites
 
 OpenEdge runtimes have to be declared in VSCode configuration file. Open settings -> Extensions -> ABL Configuration -> Runtimes, or modify `settings.json`:
@@ -29,6 +33,7 @@ You can create a local config file for your project named `.openedge.json`, with
         "c:\\temp",
         "${workspaceFolder}"
     ],
+    "dlc": "C:\\Progress\\OpenEdge", // *** Deprecated *** Use OpenEdgeVersion
     "OpenEdgeVersion": "12.2", // Reference to version number in global config
     "proPathMode": "append", // overwrite, prepend
     "parameterFiles": [ // -pf

@@ -1,55 +1,64 @@
 {
-  "definitions": {},
-  "id": "openedge.json",
-  "properties": {
-    "parameterFiles": {
-      "id": "/properties/parameterFiles",
-      "description": "Path to .pf files",
-      "items": {
-        "type": "string"
-      },
-      "type": "array"
+    "definitions": {},
+    "id": "openedge.json",
+    "properties": {
+        "parameterFiles": {
+            "id": "/properties/parameterFiles",
+            "description": "Path to .pf files",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "initializationFile": {
+            "id": "/properties/initializationFile",
+            "description": "Path to .ini file",
+            "type": "string"
+        },
+        "dlc": {
+            "id": "/properties/dlc",
+            "description": "Path to Progress OpenEdge installation (if not set use ENVVAR $DLC)",
+            "type": "string"
+        },
+        "proPath": {
+            "id": "/properties/proPath",
+            "description": "Path to include in the PROPATH variable",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "proPathMode": {
+            "default": "append",
+            "description": "Specify how the PROPATH is modified",
+            "enum": ["append", "prepend", "overwrite"],
+            "id": "/properties/proPathMode",
+            "title": "proPathMode",
+            "type": "string"
+        },
+        "checkSyntaxWindowExecutable": {
+            "default": "prowin",
+            "description": "Specify executable to check syntax for window (.w) application",
+            "enum": ["prowin", "_progres"],
+            "id": "/properties/checkSyntaxWindowExecutable",
+            "title": "checkSyntaxWindowExecutable",
+            "type": "string"
+        },
+        "workingDirectory": {
+            "id": "/properties/workingDirectory",
+            "description": "Current working directory (home)",
+            "type": "string"
+        },
+        "startupProcedure": {
+            "id": "/properties/startupProcedure",
+            "description": "Path to OpenEdge Startup Procedure",
+            "type": "string"
+        },
+        "dbDictionary": {
+            "id": "/properties/dbDictionary",
+            "description": "Logical names of database files for the auto-complete option (command: ABL Read Dictionary Structure)",
+            "type": "array"
+        }
     },
-    "dlc": {
-      "id": "/properties/dlc",
-      "description": "Path to Progress OpenEdge installation (if not set use ENVVAR $DLC)",
-      "type": ["string", "array"]
-    },
-    "proPath": {
-      "id": "/properties/proPath",
-      "description": "Path to include in the PROPATH variable",
-      "items": {
-        "type": "string"
-      },
-      "type": "array"
-    },
-    "proPathMode": {
-      "default": "append",
-      "description": "Specify how the PROPATH is modified",
-      "enum": [
-        "append",
-        "prepend",
-        "overwrite"
-      ],
-      "id": "/properties/proPathMode",
-      "title": "proPathMode",
-      "type": "string"
-    },
-    "workingDirectory": {
-      "id": "/properties/workingDirectory",
-      "description": "Current working directory (home)",
-      "type": "string"
-    },
-    "startupProcedure": {
-      "id": "/properties/startupProcedure",
-      "description": "Path to OpenEdge Startup Procedure",
-      "type": "string"
-    },
-    "dbDictionary": {
-      "id": "/properties/dbDictionary",
-      "description": "Logical names of database files for the auto-complete option (command: ABL Read Dictionary Structure)",
-      "type": "array"
-    }
-  },
-  "type": "object"
+    "type": "object"
 }

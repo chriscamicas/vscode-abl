@@ -87,6 +87,7 @@ async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeConfig) {
         batchMode: true,
         param: `${fileName} -outputLocation ${outDir}`,
         parameterFiles: oeConfig.parameterFiles,
+        initializationFile: oeConfig.initializationFile,
         startupProcedure: 'ABLUnitCore.p',
         temporaryDirectory: outDir,
     });

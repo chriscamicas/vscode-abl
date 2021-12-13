@@ -415,7 +415,7 @@ export class ABLDocument {
         this._temps = getAllTempTables(sourceCode);
         // reference to db tables
         this._temps.filter((item) => !isNullOrUndefined(item.referenceTable)).forEach((item) => {
-            const tb = getTableCollection().items.find((tn) => tn.label.toLowerCase() === item.referenceTable.toLowerCase());
+            const tb = getTableCollection().items.find((tn) => tn.label.toString().toLowerCase() === item.referenceTable.toLowerCase());
             // tslint:disable-next-line:no-string-literal
             if ((!isNullOrUndefined(tb)) && (!isNullOrUndefined(tb['fields']))) {
                 // tslint:disable-next-line:no-string-literal
@@ -472,7 +472,7 @@ export class ABLDocumentController {
         if (document.languageId === ABL_MODE.language) {
             const ablDoc: ABLDocument = this._documents[document.uri.fsPath];
             const invoke = this.invokeUpdateDocument;
-            return new Promise((resolve, reject) => {
+            return new Promise<null | void>((resolve, reject) => {
                 if (ablDoc) {
                     // cancel any pending update request
                     if (ablDoc.debounceController) {

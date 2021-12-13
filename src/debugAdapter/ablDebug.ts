@@ -351,6 +351,7 @@ class AblDebugSession extends DebugSession {
                 debugPort: args.port,
                 param: args.args ? args.args.join(' ') : '',
                 parameterFiles: oeConfig.parameterFiles,
+                initializationFile: oeConfig.initializationFile,
                 startupProcedure: path.join(__dirname, '../../../abl-src/run-debug.p'),
             });
 

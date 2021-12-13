@@ -41,6 +41,7 @@ export interface ProArgsOptions {
     startupProcedure: string;
     param?: string;
     parameterFiles?: string[];
+    initializationFile?: string;
     databaseNames?: string[];
     batchMode?: boolean;
     debugPort?: number;
@@ -69,6 +70,9 @@ export function createProArgs(options: ProArgsOptions): string[] {
     if (tempDir) {
         args.push('-T');
         args.push(tempDir);
+    }
+    if(options.initializationFile){
+        args.push('-ininame', options.initializationFile.replace('${workspaceRoot}', options.workspaceRoot));
     }
     args = args.concat(pfArgs);
     if (options.batchMode) {

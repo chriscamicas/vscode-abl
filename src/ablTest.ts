@@ -7,10 +7,9 @@ import { createProArgs, getProBin, setupEnvironmentVariables } from './shared/ab
 import { OpenEdgeConfig } from './shared/openEdgeConfigFile';
 
 import * as glob from 'glob';
-import path = require('path');
+import * as path from 'path';
 import * as promisify from 'util.promisify';
-import xml2js = require('xml2js');
-
+import * as xml2js from 'xml2js';
 import * as rimraf from 'rimraf';
 
 const readFileAsync = promisify(readFile);

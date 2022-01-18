@@ -1,4 +1,3 @@
-import cp = require('child_process');
 import * as vscode from 'vscode';
 import { ABLIndexDefinition, ABLTableDefinition, TextSelection } from './definition';
 

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CheckResult, checkSyntax, removeSyntaxStatus } from './ablCheckSyntax';
+import { checkSyntax, removeSyntaxStatus } from './ablCheckSyntax';
 import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
 import { ABL_MODE } from './ablMode';
 import { run } from './ablRun';

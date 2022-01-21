@@ -1,17 +1,14 @@
 import { spawn } from 'child_process';
 import { Socket } from 'net';
-import * as os from 'os';
 import * as path from 'path';
-import * as logger from 'vscode-debug-logger';
-import { Breakpoint, BreakpointEvent, DebugSession, Handles, InitializedEvent, OutputEvent, Scope, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, ThreadEvent } from 'vscode-debugadapter';
-import { DebugProtocol } from 'vscode-debugprotocol';
+import { LoggingDebugSession, Logger, logger, Handles, InitializedEvent, OutputEvent, Scope, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread } from '@vscode/debugadapter';
+import { DebugProtocol } from '@vscode/debugprotocol'
 import { createProArgs, getProBin, setupEnvironmentVariables } from '../shared/ablPath';
 import { loadConfigFile, OPENEDGE_CONFIG_FILENAME } from '../shared/openEdgeConfigFile';
-import { convertDataToDebuggerMessage, DebugMessage, DebugMessageArray, DebugMessageClassInfo, DebugMessageListing, DebugMessageListingBreapoint, DebugMessageVariables } from './messages';
-import { AblDebugKind, DebugVariable, isPrimitiveType } from './variables';
+import { convertDataToDebuggerMessage, DebugMessage, DebugMessageArray, DebugMessageClassInfo, DebugMessageListing, DebugMessageVariables } from './messages';
+import { AblDebugKind, DebugVariable } from './variables';
 
 import * as minimatch from 'minimatch';
-// require('console-stamp')(console);
 
 const DEFAULT_DEBUG_PORT = 3099;
 
@@ -231,7 +228,7 @@ export class AblDebugger {
 }
 
 // tslint:disable-next-line: max-classes-per-file
-class AblDebugSession extends DebugSession {
+class AblDebugSession extends LoggingDebugSession {
 
     private variableHandles: Handles<DebugVariable>;
     private breakpoints: Map<string, DebugBreakpoint[]>;
@@ -244,7 +241,7 @@ class AblDebugSession extends DebugSession {
     private ablDebugger: AblDebugger;
 
     public constructor(debuggerLinesStartAt1: boolean, isServer: boolean = false) {
-        super(debuggerLinesStartAt1, isServer);
+        super('', debuggerLinesStartAt1, isServer);
         this.variableHandles = new Handles<DebugVariable>();
         this.threads = new Set<number>();
         this.debugState = null;
@@ -255,8 +252,8 @@ class AblDebugSession extends DebugSession {
         this.remoteRoot = '';
         this.sourceMap = {};
 
-        const logPath = path.join(os.tmpdir(), 'vscode-abl-debug.txt');
-        logger.init((e) => this.sendEvent(e), logPath, isServer);
+        // const logPath = path.join(os.tmpdir(), 'vscode-abl-debug.txt');
+        // logger.init((e) => this.sendEvent(e), logPath, isServer);
     }
 
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
@@ -271,10 +268,10 @@ class AblDebugSession extends DebugSession {
 
     protected initializeDebugger(args: AttachRequestArguments): Promise<void> {
         const logLevel = args.trace === 'verbose' ?
-            logger.LogLevel.Verbose :
-            args.trace ? logger.LogLevel.Log :
-                logger.LogLevel.Error;
-        logger.setMinLogLevel(logLevel);
+            Logger.LogLevel.Verbose :
+            args.trace ? Logger.LogLevel.Log :
+                Logger.LogLevel.Error;
+        logger.setup(logLevel);
         if (args.remoteRoot) {
             this.remoteRoot = normalizePath(args.remoteRoot);
         }
@@ -988,4 +985,4 @@ class AblDebugSession extends DebugSession {
     }
 }
 
-DebugSession.run(AblDebugSession);
+LoggingDebugSession.run(AblDebugSession);

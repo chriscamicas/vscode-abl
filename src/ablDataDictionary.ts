@@ -40,7 +40,7 @@ export function readDataDictionary(oeConfig: OpenEdgeProjectConfig) {
         batchMode: true,
         param: dbs,
         parameterFiles: oeConfig.parameterFiles,
-        startupProcedure: path.join(__dirname, '../../abl-src/dict-dump.p'),
+        startupProcedure: path.join(__dirname, '../abl-src/dict-dump.p'),
         workspaceRoot: genericPath(),
     });
     let cwd = oeConfig.rootDir

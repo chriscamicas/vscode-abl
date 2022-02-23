@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { create } from './OutputChannelProcess';
 import { createProArgs, setupEnvironmentVariables } from './shared/ablPath';
 import { OpenEdgeConfig } from './shared/openEdgeConfigFile';
-import { getProject } from './main';
+import { getProject } from './extension';
 
 import * as glob from 'glob';
 import * as path from 'path';

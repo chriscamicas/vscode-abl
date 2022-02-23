@@ -14,15 +14,17 @@
         "url": "https://github.com/chriscamicas/openedge-abl-syntax/issues"
     },
     "scripts": {
-        "build": "vsce package",
+        "package": "vsce package",
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "pretest": "npm run compile",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
         "test": "mocha -u tdd ./out/test",
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
     },
-    "icon": "images/progress_icon.png",
+    "icon": "resources/images/progress_icon.png",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -36,7 +38,7 @@
         "onLanguage:abl",
         "onDebug"
     ],
-    "main": "./out/src/main",
+    "main": "./dist/extension.js",
     "contributes": {
         "languages": [
             {
@@ -53,20 +55,20 @@
                     ".i",
                     ".cls"
                 ],
-                "configuration": "./language-configuration.json"
+                "configuration": "./resources/language-configuration.json"
             }
         ],
         "grammars": [
             {
                 "language": "abl",
                 "scopeName": "source.abl",
-                "path": "./node_modules/abl-tmlanguage/abl.tmLanguage.json"
+                "path": "./resources/abl.tmLanguage.json"
             }
         ],
         "snippets": [
             {
                 "language": "abl",
-                "path": "./snippets/abl.json"
+                "path": "./resources/abl.json"
             }
         ],
         "commands": [
@@ -115,7 +117,7 @@
             {
                 "type": "abl",
                 "label": "ABL",
-                "program": "./out/src/debugAdapter/ablDebug.js",
+                "program": "./dist/ablDebug.js",
                 "runtime": "node",
                 "languages": [
                     "abl"
@@ -333,7 +335,7 @@
         "jsonValidation": [
             {
                 "fileMatch": ".openedge.json",
-                "url": "./schemas/openedge.schema.json"
+                "url": "./resources/openedge.schema.json"
             }
         ],
         "keybindings": [
@@ -371,6 +373,9 @@
         "eslint": "^8.7.0",
         "mocha": "^9.1.3",
         "typescript": "^3.7.5",
-        "vscode-test": "^1.3.0"
+        "vscode-test": "^1.3.0",
+        "ts-loader": "^7.0.5",
+        "webpack": "^4.43.0",
+        "webpack-cli": "^3.3.11"
     }
 }

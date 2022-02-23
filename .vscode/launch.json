@@ -12,9 +12,6 @@
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
-            "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
-            ],
 			"preLaunchTask": "npm: watch"
         },
     	{
@@ -22,7 +19,7 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "program": "${workspaceFolder}/out/src/debugAdapter/ablDebug.js",
+            "program": "${workspaceFolder}/dist/ablDebug.js",
             "args": [
                 "--server=4712"
             ],

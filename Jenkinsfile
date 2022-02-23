@@ -27,7 +27,7 @@ pipeline {
       steps {
         // copyArtifacts filter: 'target/abl-lsp-0.9-SNAPSHOT-shaded.jar', fingerprintArtifacts: true, projectName: '/ABLS/Temp', selector: lastSuccessful(), target: '.'
         withSonarQubeEnv('RSSW2') {
-          sh 'node --version && npm install vsce && node_modules/.bin/vsce package'
+          sh 'node --version && npm install vsce && npm install webpack && npm run webpack && cp node_modules/abl-tmlanguage/abl.tmLanguage.json resources/abl.tmLanguage.json && npm run package'
         }
         archiveArtifacts artifacts: '*.vsix'
       }

@@ -15,7 +15,7 @@ export function run(filename: string, ablConfig: OpenEdgeProjectConfig): Promise
         batchMode: true,
         param: filename,
         parameterFiles: ablConfig.parameterFiles,
-        startupProcedure: path.join(__dirname, '../../abl-src/run.p'),
+        startupProcedure: path.join(__dirname, '../abl-src/run.p'),
         workspaceRoot: ablConfig.rootDir,
     });
 

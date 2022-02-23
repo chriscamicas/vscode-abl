@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { CancellationToken, DocumentFormattingEditProvider, FormattingOptions, OnTypeFormattingEditProvider, Position, Range, TextDocument, TextEdit, workspace, WorkspaceConfiguration } from 'vscode';
 import { OpenEdgeProjectConfig } from '../shared/openEdgeConfigFile';
 import { ABL_MODE } from '../ablMode';
-import { getProject } from '../main';
+import { getProject } from '../extension';
 
 export class ABLFormattingProvider implements DocumentFormattingEditProvider, OnTypeFormattingEditProvider {
 

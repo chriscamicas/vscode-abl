@@ -34,7 +34,7 @@ export function checkSyntax(filename: string, ablConfig: OpenEdgeProjectConfig):
         batchMode: true,
         param: filename,
         parameterFiles: ablConfig.parameterFiles,
-        startupProcedure: path.join(__dirname, '../../abl-src/check-syntax.p'),
+        startupProcedure: path.join(__dirname, '../abl-src/check-syntax.p'),
         workspaceRoot: ablConfig.rootDir,
     });
 

@@ -1,5 +1,7 @@
+dist/
 npm*
 node_modules
 *.vsix
 out
 .vscode-test
+resources/abl.tmLanguage.json

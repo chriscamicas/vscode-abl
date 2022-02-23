@@ -6,7 +6,7 @@ import { DebugProtocol } from '@vscode/debugprotocol'
 import { createProArgs, setupEnvironmentVariables } from '../shared/ablPath';
 import { convertDataToDebuggerMessage, DebugMessage, DebugMessageArray, DebugMessageClassInfo, DebugMessageListing, DebugMessageVariables } from './messages';
 import { AblDebugKind, DebugVariable } from './variables';
-import { getProject } from '../main';
+import { getProject } from '../extension';
 import * as minimatch from 'minimatch';
 
 const DEFAULT_DEBUG_PORT = 3099;
@@ -349,10 +349,10 @@ class AblDebugSession extends LoggingDebugSession {
                 debugPort: args.port,
                 param: args.args ? args.args.join(' ') : '',
                 parameterFiles: oeConfig.parameterFiles,
-                startupProcedure: path.join(__dirname, '../../../abl-src/run-debug.p'),
+                startupProcedure: path.join(__dirname, '../abl-src/run-debug.p'),
             });
 
-            // prepareProArguments(path.join(__dirname, '../../abl-src/run-debug.p'), filename, true, true).then(proArgs => {
+            // prepareProArguments(path.join(__dirname, '../abl-src/run-debug.p'), filename, true, true).then(proArgs => {
             const spawnOptions = { env, cwd };
             // spawnOptions.stdio = 'pipe';
             const spawnedProcess = spawn(cmd, proArgs, spawnOptions);

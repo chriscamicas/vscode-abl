@@ -9,9 +9,9 @@ This extension provides rich OpenEdge ABL language support for Visual Studio Cod
 * Debugger
 * Auto-complete (tables, fields, methods)
 
-![features demo](./docs/images/demo.gif "Demo")
+![features demo](./resources/images/demo.gif "Demo")
 
-![debugger demo](./docs/images/debug.gif "Debugger")
+![debugger demo](./resources/images/debug.gif "Debugger")
 
 ## Using
 
@@ -22,7 +22,7 @@ and the `OpenEdgeVersion` attribute has to reference one of those version number
 ### Prerequisites
 
 OpenEdge runtimes have to be declared in VSCode configuration file. Open settings -> Extensions -> ABL Configuration -> Runtimes, or modify `settings.json`:
-![Settings](docs/images/settings.png)
+![Settings](resources/images/settings.png)
 
 ### Config file
 You can create a local config file for your project named `.openedge.json`, with the following structure:

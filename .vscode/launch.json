@@ -3,7 +3,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Extension",
+            "name": "Run Extension - Workspace",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}", "run_env/sample-oe-projects"
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "preLaunchTask": "npm: webpack"
+        },
+        {
+            "name": "Run Extension - Sample project 1",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
@@ -12,9 +24,45 @@
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
-			"preLaunchTask": "npm: watch"
+            "preLaunchTask": "npm: webpack"
         },
-    	{
+        {
+            "name": "Run Extension - SonarTestProject",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}", "C:\\Users\\gquer\\projets\\sonaroe-test-project"
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "preLaunchTask": "npm: webpack"
+        },
+        {
+            "name": "Run Extension - GPAO",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}", "C:\\Users\\gquer\\projets\\customers\\hachette\\App-GPAO"
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "preLaunchTask": "npm: webpack"
+        },
+        {
+            "name": "Run Extension - Consultingwerk",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}", "C:\\Work_STREAM\\SmartComponentLibrary\\Develop125\\Develop125.code-workspace"
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "preLaunchTask": "npm: webpack"
+        },
+        {
             "name": "Launch as server",
             "type": "node",
             "request": "launch",
@@ -24,10 +72,7 @@
                 "--server=4712"
             ],
             "sourceMaps": true,
-            "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
-            ],
-			"preLaunchTask": "npm: watch"
+			"preLaunchTask": "npm: webpack"
         },
         {
             "name": "Extension Tests",
@@ -42,14 +87,14 @@
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
             ],
-            "preLaunchTask": "npm: watch"
+            "preLaunchTask": "npm: webpack"
         }
     ],
     "compounds": [
         {
             "name": "Extension + Debug server",
             "configurations": [
-                "Run Extension",
+                "Run Extension - Sample project 1",
                 "Launch as server"
             ]
         }

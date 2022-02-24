@@ -5,3 +5,12 @@ node_modules
 out
 .vscode-test
 resources/abl.tmLanguage.json
+run_env/sample-oe-projects/project1/builder.lock
+run_env/sample-oe-projects/project1/build
+run_env/sample-oe-projects/project1/.builder
+run_env/sample-oe-projects/project2/builder.lock
+run_env/sample-oe-projects/project2/build
+run_env/sample-oe-projects/project2/.builder
+run_env/sample-oe-projects/project3/builder.lock
+run_env/sample-oe-projects/project3/build
+run_env/sample-oe-projects/project3/.builder

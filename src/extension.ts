@@ -1,6 +1,5 @@
 import path = require('path');
 import * as vscode from 'vscode';
-import { checkSyntax, removeSyntaxStatus } from './ablCheckSyntax';
 import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
 import { run } from './ablRun';
 import { ablTest } from './ablTest';
@@ -10,31 +9,81 @@ import { ABLCompletionItemProvider, getTableCollection, watchDictDumpFiles } fro
 import { ABLDefinitionProvider } from './providers/ablDefinitionProvider';
 import { ABLFormattingProvider } from './providers/ablFormattingProvider';
 import { ABLHoverProvider } from './providers/ablHoverProvider';
-import { ABLSymbolProvider } from './providers/ablSymbolProvider';
 import { loadConfigFile, OpenEdgeProjectConfig } from './shared/openEdgeConfigFile';
+import { LanguageClient, LanguageClientOptions, ServerOptions, Executable } from 'vscode-languageclient/node';
 
 let errorDiagnosticCollection: vscode.DiagnosticCollection;
 let warningDiagnosticCollection: vscode.DiagnosticCollection;
+let client: LanguageClient;
 
 let oeRuntimes: Array<any>;
 let defaultRuntime;
+let langServDebug: boolean;
 let projects: Array<OpenEdgeProjectConfig> = new Array();
 let defaultProject: OpenEdgeProjectConfig;
+let oeStatusBarItem: vscode.StatusBarItem;
 
 export function activate(ctx: vscode.ExtensionContext): void {
     ctx.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('abl', new AblDebugConfigurationProvider()));
 
-    startBuildOnSaveWatcher(ctx.subscriptions);
+    // startBuildOnSaveWatcher(ctx.subscriptions);
     startDictWatcher();
     startDocumentWatcher(ctx);
 
     initProviders(ctx);
     registerCommands(ctx);
+
+    const serverExec: Executable = {
+        command: 'java',
+        args: [
+            '--add-opens=java.base/java.lang=ALL-UNNAMED',
+            '--add-opens=java.base/java.math=ALL-UNNAMED',
+            '--add-opens=java.base/java.util=ALL-UNNAMED',
+            '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+            '--add-opens=java.base/java.net=ALL-UNNAMED',
+            '--add-opens=java.base/java.text=ALL-UNNAMED',
+            '--add-opens=java.sql/java.sql=ALL-UNNAMED',
+            '--add-opens=java.base/sun.nio.fs=ALL-UNNAMED',
+            '-Dorg.slf4j.simpleLogger.defaultLogLevel=' + (langServDebug ? 'DEBUG' : 'INFO'),
+            '-jar',
+            path.join(__dirname, '/../abl-lsp.jar')
+            // 'C:\\Users\\gquer\\projets\\abl-language-server\\bootstrap\\target\\abl-lsp-bootstrap-1.0.0-SNAPSHOT.jar'
+            // '-classpath', 'C:\\Users\\gquer\\Projets\\abl-language-server\\langserv\\target\\classes;C:\\Users\\gquer\\Projets\\abl-language-server\\shade\\target\\abl-lsp-shaded-1.0.0-SNAPSHOT-shaded.jar', 'eu.rssw.openedge.ls.proparse.Main'
+        ] };
+    const serverOptions: ServerOptions = serverExec;
+
+    // Options to control the language client
+    const clientOptions: LanguageClientOptions = {
+        documentSelector: [{ scheme: 'file', language: 'abl' }],
+        synchronize: {
+            configurationSection: 'abl',
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/openedge-project.properties')
+        }
+    };
+
+    // Create the language client and start the client.
+    client = new LanguageClient('ablLanguageServer', 'ABL Language Server', serverOptions, clientOptions);
+
+    // Start the client. This will also launch the server
+    client.start();
+
+	oeStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+    oeStatusBarItem.text = 'Click to refresh';
+    oeStatusBarItem.command = 'abl.showProcesses';
+    oeStatusBarItem.show();
+	ctx.subscriptions.push(oeStatusBarItem);
+}
+
+function updateStatusBarItem(): void {
+    client.sendRequest("proparse/pendingProcesses").then (data => {
+        oeStatusBarItem.text = `$(megaphone) ${data} processes`;
+        oeStatusBarItem.show();
+    });
 }
 
 function registerCommands(ctx: vscode.ExtensionContext) {
-    ctx.subscriptions.push(vscode.commands.registerCommand('abl.checkSyntax', () => {
-        runBuilds(vscode.window.activeTextEditor.document);
+    ctx.subscriptions.push(vscode.commands.registerCommand('abl.showProcesses', () => {
+        updateStatusBarItem();
     }));
     ctx.subscriptions.push(vscode.commands.registerCommand('abl.dataDictionary', () => {
         openDataDictionary(getProject(vscode.window.activeTextEditor.document.uri.fsPath));
@@ -97,38 +146,22 @@ function registerCommands(ctx: vscode.ExtensionContext) {
 }
 
 function readWorkspaceOEConfigFiles() {
-    vscode.workspace.findFiles('**/.openedge.json').then( list => {
+    vscode.workspace.findFiles('**/openedge-project.json').then( list => {
         list.forEach ( uri => {
             console.log("OpenEdge project config file found: " + uri.fsPath);
             loadConfigFile(uri.fsPath).then(config => {
                 // FIXME Way too verbose, there's probably a much better way to do that
                 var prjConfig = new OpenEdgeProjectConfig();
-                prjConfig.dlc = getDlcDirectory(config.OpenEdgeVersion);
-                prjConfig.rootDir = vscode.Uri.parse(path.dirname(uri.path)).fsPath // path.dirname(uri.path);
-                prjConfig.version = config.OpenEdgeVersion;
-                prjConfig.gui = config.gui;
-                // Make sure propath is always initialized
-                if (!config.proPath || !(config.proPath instanceof Array) || config.proPath.length === 0) 
-                    prjConfig.propath = [path.posix.normalize(prjConfig.rootDir)]
-                else
-                    prjConfig.propath = config.proPath
-                if (!config.proPathMode)
-                    prjConfig.propathMode = 'append';
-                else
-                    prjConfig.propathMode = config.proPathMode
-                if (!config.startupProcedure)
-                    prjConfig.startupProc = ''
-                else
-                    prjConfig.startupProc = config.startupProcedure
-                if (!config.parameterFiles || !(config.parameterFiles instanceof Array) || config.parameterFiles.length === 0) 
-                    prjConfig.parameterFiles = []
-                else
-                    prjConfig.parameterFiles = config.parameterFiles
-                if (!config.dbDictionary || !(config.dbDictionary instanceof Array) || config.dbDictionary.length === 0) 
-                    prjConfig.dbDictionary = []
-                else
-                    prjConfig.dbDictionary = config.dbDictionary
-                prjConfig.test = config.test
+                prjConfig.dlc = getDlcDirectory(config.version);
+                prjConfig.rootDir = vscode.Uri.parse(path.dirname(uri.path)).fsPath
+                prjConfig.version = config.version;
+                prjConfig.gui = config.graphicalMode;
+                prjConfig.propath = []
+                prjConfig.propathMode = 'append';
+                prjConfig.startupProc = ''
+                prjConfig.parameterFiles = []
+                prjConfig.dbDictionary = []
+                // prjConfig.test = config.test
                 prjConfig.format = config.format
 
                 if (prjConfig.dlc != "") {
@@ -141,6 +174,7 @@ function readWorkspaceOEConfigFiles() {
 }
 
 function readGlobalOpenEdgeRuntimes() {
+    langServDebug = vscode.workspace.getConfiguration('abl').get('langServerDebug');
     oeRuntimes = vscode.workspace.getConfiguration('abl.configuration').get<Array<any>>('runtimes');
     if (oeRuntimes.length == 0) {
         vscode.window.showWarningMessage('No OpenEdge runtime configured on this machine');
@@ -152,6 +186,7 @@ function readGlobalOpenEdgeRuntimes() {
         defaultProject.rootDir = vscode.workspace.workspaceFolders[0].uri.fsPath;
         defaultProject.version = defaultRuntime.name;
         defaultProject.gui = false;
+        defaultProject.propath = [];
     }
 }
 
@@ -177,88 +212,11 @@ function initProviders(context: vscode.ExtensionContext) {
     new ABLCompletionItemProvider(context);
     new ABLHoverProvider(context);
     new ABLDefinitionProvider(context);
-    new ABLSymbolProvider(context);
     new ABLFormattingProvider(context);
 }
 
 function startDocumentWatcher(context: vscode.ExtensionContext) {
     initDocumentController(context);
-}
-
-function runBuilds(document: vscode.TextDocument) {
-
-    function mapSeverityToVSCodeSeverity(sev: string) {
-        switch (sev) {
-            case 'error': return vscode.DiagnosticSeverity.Error;
-            case 'warning': return vscode.DiagnosticSeverity.Warning;
-            default: return vscode.DiagnosticSeverity.Error;
-        }
-    }
-
-    if (document.languageId !== 'abl') {
-        return;
-    }
-
-    checkSyntax(document.uri.fsPath, getProject(document.uri.fsPath)).then((errors) => {
-        errorDiagnosticCollection.clear();
-        warningDiagnosticCollection.clear();
-
-        const diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
-
-        errors.forEach((error) => {
-            const canonicalFile = vscode.Uri.file(error.file).toString();
-            let startColumn = 0;
-            let endColumn = 1;
-            if (error.line === 0) {
-                vscode.window.showErrorMessage(error.msg);
-            } else {
-                let range;
-                if (document && document.uri.toString() === canonicalFile) {
-                    range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
-                    const text = document.getText(range);
-                    const [_, leading, trailing] = /^(\s*).*(\s*)$/.exec(text);
-                    startColumn = startColumn + leading.length;
-                    endColumn = text.length - trailing.length;
-                }
-                range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
-                const severity = mapSeverityToVSCodeSeverity(error.severity);
-                const diagnostic = new vscode.Diagnostic(range, error.msg, severity);
-                let diagnostics = diagnosticMap.get(canonicalFile);
-                if (!diagnostics) {
-                    diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
-                }
-                if (!diagnostics[severity]) {
-                    diagnostics[severity] = [];
-                }
-                diagnostics[severity].push(diagnostic);
-                diagnosticMap.set(canonicalFile, diagnostics);
-            }
-        });
-        diagnosticMap.forEach((diagMap, file) => {
-            errorDiagnosticCollection.set(vscode.Uri.parse(file), diagMap[vscode.DiagnosticSeverity.Error]);
-            warningDiagnosticCollection.set(vscode.Uri.parse(file), diagMap[vscode.DiagnosticSeverity.Warning]);
-        });
-    }).catch((err) => {
-        vscode.window.showInformationMessage('Error: ' + err);
-    });
-}
-
-function startBuildOnSaveWatcher(subscriptions: vscode.Disposable[]) {
-    const ablConfig = vscode.workspace.getConfiguration('abl');
-    if (ablConfig.get('checkSyntaxOnSave') === 'file') {
-        vscode.workspace.onDidSaveTextDocument((document) => {
-            if (document.languageId !== 'abl') {
-                return;
-            }
-            runBuilds(document);
-        }, null, subscriptions);
-    }
-    vscode.workspace.onDidOpenTextDocument((document) => {
-        removeSyntaxStatus();
-    }, null, subscriptions);
-    vscode.window.onDidChangeActiveTextEditor((_) => {
-        removeSyntaxStatus();
-    }, null, subscriptions);
 }
 
 function startDictWatcher() {

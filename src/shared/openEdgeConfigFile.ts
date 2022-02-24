@@ -20,20 +20,26 @@ export interface Command {
 }
 
 export interface OpenEdgeConfig {
-    OpenEdgeVersion?: string;
-    gui?: boolean;
-    dlc?: string;
-    proPath?: string[];
-    proPathMode?: 'append' | 'overwrite' | 'prepend';
-    parameterFiles?: string[];
-    workingDirectory?: string;
-    test?: TestConfig;
-    startupProcedure?: string;
-    dbDictionary?: string[];
+    // JSON mapping of openedge-project.json
+    version?: string;
+    graphicalMode?: boolean;
+    extraParameters?: string;
+    buildPath?: BuildPathEntry[];
+    buildDirectory?: string;
+    dumpFiles?: string[];
+    dbConnections?: string[];
+    aliases?: string;
+    numThreads: number;
     format?: OpenEdgeFormatOptions;
 }
 
+export interface BuildPathEntry {
+  type: string;
+  path: string;
+}
+
 export class OpenEdgeProjectConfig {
+  // Real project config, created from OpenEdgeConfig
   rootDir: string;
   version: string;
   gui: boolean;
@@ -58,22 +64,6 @@ export class OpenEdgeProjectConfig {
       else
         return path.join(this.dlc, 'bin', '_progres')
     }
-  }
-}
-
-export function getExecutable(cfg: OpenEdgeConfig): string {
-  if (!fs.existsSync(cfg.dlc))
-    return null;
-  if (cfg.gui) {
-    if (fs.existsSync(path.join(cfg.dlc, 'bin', 'prowin.exe')))
-      return path.join(cfg.dlc, 'bin', 'prowin.exe');
-    else
-      return path.join(cfg.dlc, 'bin', 'prowin32.exe')
-  } else {
-    if (fs.existsSync(path.join(cfg.dlc, 'bin', '_progres.exe')))
-      return path.join(cfg.dlc, 'bin', '_progres.exe');
-    else
-      return path.join(cfg.dlc, 'bin', '_progres')
   }
 }
 

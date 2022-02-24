@@ -1,0 +1,13 @@
+{
+  "version": "12.2",
+  "graphicalMode": true,
+  "extraParameters": "",
+  "buildPath": [
+    { "type": "source", "path": "src" }
+  ],
+  "buildDirectory": "build",
+  "dumpFiles": [],
+  "dbConnections": [],
+  "aliases": "",
+  "numThreads": 1
+}

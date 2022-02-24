@@ -3,7 +3,7 @@ import { tmpdir } from 'os';
 import * as vscode from 'vscode';
 import { create } from './OutputChannelProcess';
 import { createProArgs, setupEnvironmentVariables } from './shared/ablPath';
-import { OpenEdgeConfig } from './shared/openEdgeConfigFile';
+import { OpenEdgeProjectConfig } from './shared/openEdgeConfigFile';
 import { getProject } from './extension';
 
 import * as glob from 'glob';
@@ -33,7 +33,7 @@ export function ablTest(filename: string, ablConfig: vscode.WorkspaceConfigurati
 
         outputChannel.appendLine(`Starting UnitTests`);
 
-        const env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
+        const env = setupEnvironmentVariables(process.env, oeConfig);
         if (filename) {
             runTestFile(filename, cmd, env, cwd, oeConfig).then((summary) => {
                 outputChannel.appendLine(`Executed ${summary.tests} tests, Errors ${summary.errors}, Failures ${summary.failures}`);
@@ -60,7 +60,7 @@ export function ablTest(filename: string, ablConfig: vscode.WorkspaceConfigurati
         // outputChannel.appendLine(`Finished UnitTests`);
 }
 
-async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeConfig) {
+async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeProjectConfig) {
     const outDir = await mkdtempAsync(path.join(tmpdir(), 'ablunit-'));
 
     const xmlParser = new xml2js.Parser();

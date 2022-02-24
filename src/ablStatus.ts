@@ -3,6 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------*/
 
+// Orphan file, not used for now (or ever)
+
 'use strict';
 
 import * as vscode from 'vscode';

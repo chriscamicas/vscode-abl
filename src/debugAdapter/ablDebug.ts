@@ -342,7 +342,7 @@ class AblDebugSession extends LoggingDebugSession {
         // const configFileName = path.join(cwd, OPENEDGE_CONFIG_FILENAME);
         // loadConfigFile(configFileName).then((oeConfig) => {
             const cmd = oeConfig.getExecutable(false)
-            const env = setupEnvironmentVariables(process.env, oeConfig, cwd);
+            const env = setupEnvironmentVariables(process.env, oeConfig);
             env.VSABL_STARTUP_PROGRAM = filename;
             const proArgs = createProArgs({
                 batchMode: true,

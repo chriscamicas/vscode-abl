@@ -1,4 +1,4 @@
-# OpenEdge ABL language support for Visual Studio Code
+# OpenEdge ABL language support for Visual Studio Code (with Language Server support)
 This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## Features

@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as vscode from 'vscode';
 import { OpenEdgeProjectConfig } from './shared/openEdgeConfigFile';
 import { outputChannel } from './ablStatus';
 import { create } from './OutputChannelProcess';
@@ -10,7 +9,8 @@ export function run(filename: string, ablConfig: OpenEdgeProjectConfig): Promise
     let cwd = path.dirname(filename);
 
     const cmd = ablConfig.getExecutable(); 
-    const env = setupEnvironmentVariables(process.env, ablConfig, ablConfig.rootDir);
+    const env = setupEnvironmentVariables(process.env, ablConfig);
+
     const args = createProArgs({
         batchMode: true,
         param: filename,

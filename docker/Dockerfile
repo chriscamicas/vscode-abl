@@ -7,11 +7,11 @@ COPY --from=dlc /opt/dlc-12.2/ /opt/dlc-12.2/
 COPY --from=dlc /opt/amazon-corretto-11.0.7.10.1-linux-x64/ /opt/amazon-corretto-11.0.7.10.1-linux-x64/
 
 USER coder
-COPY --chown=coder:coder openedge-abl-1.2.1.vsix /home/coder
+COPY --chown=coder:coder openedge-abl-1.3.1.vsix /home/coder
 COPY --chown=coder:coder stephenwassell.light-high-contrast-theme-1.1.5.vsix /home/coder
 # COPY --chown=coder:coder *.bin /home/coder/.rssw/
 WORKDIR /home/coder
-RUN code-server --install-extension openedge-abl-1.2.1.vsix && code-server --install-extension stephenwassell.light-high-contrast-theme-1.1.5.vsix && rm /home/coder/*.vsix
+RUN code-server --install-extension openedge-abl-1.3.1.vsix && code-server --install-extension stephenwassell.light-high-contrast-theme-1.1.5.vsix && rm /home/coder/*.vsix
 EXPOSE 8080
 COPY --chown=coder:coder settings.json /home/coder/.local/share/code-server/User/settings.json
 RUN mkdir /home/coder/ws

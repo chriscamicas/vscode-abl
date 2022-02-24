@@ -1,16 +1,10 @@
 {
+  "$schema": "http://json-schema.org/schema",
+  "$id": "https://riverside-software.fr/openedge-project.json",
   "definitions": {},
   "id": "openedge.json",
   "properties": {
-    "parameterFiles": {
-      "id": "/properties/parameterFiles",
-      "description": "Path to .pf files",
-      "items": {
-        "type": "string"
-      },
-      "type": "array"
-    },
-    "OpenEdgeVersion": {
+    "version": {
       "id": "/properties/oeversion",
       "description": "OpenEdge version for this project",
       "enum": [
@@ -25,54 +19,57 @@
       ],
       "type": "string"
     },
-    "gui": {
-      "id": "/properties/gui",
+    "graphicalMode": {
+      "id": "/properties/graphicalMode",
       "description": "Use prowin or _progres to start OpenEdge sessions",
       "default": false,
       "type": "boolean"
     },
-    "dlc": {
-      "id": "/properties/dlc",
-      "description": "*** DEPRECATED *** Path to Progress OpenEdge installation (if not set use ENVVAR $DLC)",
-      "type": [
-        "string",
-        "array"
-      ]
+    "extraParameters": {
+      "id": "/properties/parameterFiles",
+      "description": "Extra parameters passed to Progress executable",
+      "type": "string"
     },
-    "proPath": {
-      "id": "/properties/proPath",
-      "description": "Path to include in the PROPATH variable",
+    "buildDirectory": {
+      "id": "/properties/buildDirectory",
+      "description": "Default build directory (if not specified in source directory)",
+      "type": "string"
+    },
+    "buildPath": {
+      "id": "/properties/buildPath",
+      "description": "Source and PROPATH entries",
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "dumpFiles": {
+      "id": "/properties/dumpFiles",
+      "description": "Comma-separated list of DF files",
       "items": {
         "type": "string"
       },
       "type": "array"
     },
-    "proPathMode": {
-      "default": "append",
-      "description": "Specify how the PROPATH is modified",
-      "enum": [
-        "append",
-        "prepend",
-        "overwrite"
-      ],
-      "id": "/properties/proPathMode",
-      "title": "proPathMode",
-      "type": "string"
-    },
-    "workingDirectory": {
-      "id": "/properties/workingDirectory",
-      "description": "Current working directory (home)",
-      "type": "string"
-    },
-    "startupProcedure": {
-      "id": "/properties/startupProcedure",
-      "description": "Path to OpenEdge Startup Procedure",
-      "type": "string"
-    },
-    "dbDictionary": {
-      "id": "/properties/dbDictionary",
-      "description": "Logical names of database files for the auto-complete option (command: ABL Read Dictionary Structure)",
+    "dbConnections": {
+      "id": "/properties/dbConnections",
+      "description": "Database connection strings (one DB per entry)",
+      "items": {
+        "type": "string"
+      },
       "type": "array"
+    },
+    "aliases": {
+      "id": "/properties/aliases",
+      "description": "Semi-colon separated list of aliases",
+      "type": "string"
+    },
+    "numThreads": {
+      "id": "/properties/threads",
+      "description": "Number of background worker threads",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 32
     }
   },
   "type": "object"

@@ -34,7 +34,7 @@ export function openDataDictionary(project: OpenEdgeProjectConfig) {
 
 export function readDataDictionary(oeConfig: OpenEdgeProjectConfig) {
     const cmd = oeConfig.getExecutable()
-    const env = setupEnvironmentVariables(process.env, oeConfig, genericPath());
+    const env = setupEnvironmentVariables(process.env, oeConfig);
     const dbs = oeConfig.dbDictionary.join(',');
     const args = createProArgs({
         batchMode: true,

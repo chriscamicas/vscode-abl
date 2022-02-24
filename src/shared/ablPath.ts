@@ -52,11 +52,7 @@ export function createProArgs(options: ProArgsOptions): string[] {
     return args;
 }
 
-export function setupEnvironmentVariables(
-    env: any,
-    openEdgeConfig: OpenEdgeProjectConfig,
-    workspaceRoot: string
-): any {
+export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeProjectConfig): any {
     env.VSABL_PROPATH = openEdgeConfig.propath.join(',')
     env.VSABL_PROPATH_MODE = openEdgeConfig.propathMode;
     env.VSABL_OE_STARTUP_PROCEDURE = '';

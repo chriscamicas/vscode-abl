@@ -92,11 +92,11 @@ export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
     // 3 = aditional details (returns xxx...)
     // 4 = code block (incomplete)
 
-    const regexStart = new RegExp(/\b(proc|procedure|func|function){1}[\s\t\n]+([\w\d\-]+)(.*?)(?:[\.\:][^\w\d\-\+])/gim);
+    const regexStart = new RegExp(/\b(proc|procedure|func|function|method|constructor){1}[\s\t\n]+([\w\d\-]+)((?:.|\n)*?)(?:[\.\:][^\w\d\-\+])/gim);
     // 1 = function | procedure
     // 2 = name
     // 3 = aditional details (returns xxx...)
-    const regexEnd = new RegExp(/\b(?:end[\s\t]+(proc|procedure|func|function)){1}\b/gim);
+    const regexEnd = new RegExp(/\b(?:end[\s\t]+(proc|procedure|func|function|method|constructor)){1}\b/gim);
     //
     const text = sourceCode.sourceWithoutStrings;
     let resStart = regexStart.exec(text);
@@ -108,6 +108,8 @@ export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
             const m = new ABLMethod();
             try {
                 m.name = resStart[2];
+                if(resStart[1].toLowerCase() == 'method' || resStart[1].toLowerCase() == 'constructor')
+                    m.name = resStart[3];
                 m.lineAt = sourceCode.document.positionAt(resStart.index).line;
                 m.lineEnd = sourceCode.document.positionAt(regexEnd.lastIndex).line;
                 m.params = [];

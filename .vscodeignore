@@ -1,6 +1,15 @@
-src/**/*
 .vscode/**/*
+.npm/**/*
+src/**/*
+out/**/*
+node_modules
+run_env
+test
 tsconfig.json
 tslint.json
 .gitignore
+.eslintignore
 docs
+docker
+Jenkinsfile
+azure-pipelines.yml

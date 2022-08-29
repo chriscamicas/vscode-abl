@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import * as path from 'path';
-import { genericWorkspaceFolder, getOpenEdgeConfig } from './ablConfig';
+import { OpenEdgeProjectConfig } from './shared/openEdgeConfigFile';
 import { outputChannel } from './ablStatus';
 import { create } from './OutputChannelProcess';
-import { createProArgs, getProBin, getProwinBin, setupEnvironmentVariables } from './shared/ablPath';
+import { createProArgs, setupEnvironmentVariables } from './shared/ablPath';
 
 function genericPath(): string {
     if (vscode.window.activeTextEditor) {
@@ -13,45 +13,39 @@ function genericPath(): string {
             return folder.uri.fsPath;
         }
     }
-    if (genericWorkspaceFolder) {
+    /* if (genericWorkspaceFolder) {
         return genericWorkspaceFolder.uri.fsPath;
-    }
+    } */
     return vscode.workspace.rootPath;
 }
 
-export function openDataDictionary() {
+export function openDataDictionary(project: OpenEdgeProjectConfig) {
     const cwd = genericPath();
     const env = process.env;
 
-    return getOpenEdgeConfig().then((oeConfig) => {
-        const cmd = getProwinBin(oeConfig.dlc);
-
-        // TODO : reuse the openedgeconfig file and pf files defined
-        const args = createProArgs({
-            parameterFiles: oeConfig.parameterFiles,
-            startupProcedure: '_dict.p',
-        });
-        cp.spawn(cmd, args, { env, cwd, detached: true });
+    const cmd = project.getExecutable(true)
+    // TODO : reuse the openedgeconfig file and pf files defined
+    const args = createProArgs({
+        parameterFiles: project.parameterFiles,
+        startupProcedure: '_dict.p',
     });
+    cp.spawn(cmd, args, { env, cwd, detached: true });
 }
 
-export function readDataDictionary(ablConfig: vscode.WorkspaceConfiguration) {
-    return getOpenEdgeConfig().then((oeConfig) => {
-        const cmd = getProBin(oeConfig.dlc);
-        const env = setupEnvironmentVariables(process.env, oeConfig, genericPath());
-        const dbs = (oeConfig.dbDictionary ? oeConfig.dbDictionary.join(',') : '');
-        const args = createProArgs({
-            batchMode: true,
-            param: dbs,
-            parameterFiles: oeConfig.parameterFiles,
-            startupProcedure: path.join(__dirname, '../../abl-src/dict-dump.p'),
-            workspaceRoot: genericPath(),
-        });
-        let cwd = genericPath();
-        cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', genericPath()).replace('${workspaceFolder}', genericPath()) : cwd;
-        vscode.window.showInformationMessage('Updating data dictionary...');
-        create(cmd, args, { env: env, cwd: cwd }, outputChannel).then((res) => {
-            vscode.window.showInformationMessage('Data dictionary ' + (res.success ? 'updated' : 'failed'));
-        });
+export function readDataDictionary(oeConfig: OpenEdgeProjectConfig) {
+    const cmd = oeConfig.getExecutable()
+    const env = setupEnvironmentVariables(process.env, oeConfig);
+    const dbs = oeConfig.dbDictionary.join(',');
+    const args = createProArgs({
+        batchMode: true,
+        param: dbs,
+        parameterFiles: oeConfig.parameterFiles,
+        startupProcedure: path.join(__dirname, '../abl-src/dict-dump.p'),
+        workspaceRoot: genericPath(),
+    });
+    let cwd = oeConfig.rootDir
+    vscode.window.showInformationMessage('Updating data dictionary...');
+    create(cmd, args, { env: env, cwd: cwd }, outputChannel).then((res) => {
+        vscode.window.showInformationMessage('Data dictionary ' + (res.success ? 'updated' : 'failed'));
     });
 }

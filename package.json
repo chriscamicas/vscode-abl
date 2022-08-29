@@ -1,7 +1,7 @@
 {
     "name": "openedge-abl",
     "publisher": "chriscamicas",
-    "version": "1.2.1",
+    "version": "1.3.1",
     "description": "OpenEdge ABL language support for VS Code.",
     "displayName": "OpenEdge ABL",
     "author": "chriscamicas",
@@ -14,15 +14,17 @@
         "url": "https://github.com/chriscamicas/openedge-abl-syntax/issues"
     },
     "scripts": {
-        "build": "vsce package",
+        "package": "vsce package",
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "pretest": "npm run compile",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
         "test": "mocha -u tdd ./out/test",
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
     },
-    "icon": "images/progress_icon.png",
+    "icon": "resources/images/progress_icon.png",
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -36,7 +38,7 @@
         "onLanguage:abl",
         "onDebug"
     ],
-    "main": "./out/src/main",
+    "main": "./dist/extension.js",
     "contributes": {
         "languages": [
             {
@@ -53,20 +55,20 @@
                     ".i",
                     ".cls"
                 ],
-                "configuration": "./language-configuration.json"
+                "configuration": "./resources/language-configuration.json"
             }
         ],
         "grammars": [
             {
                 "language": "abl",
                 "scopeName": "source.abl",
-                "path": "./node_modules/abl-tmlanguage/abl.tmLanguage.json"
+                "path": "./resources/abl.tmLanguage.json"
             }
         ],
         "snippets": [
             {
                 "language": "abl",
-                "path": "./snippets/abl.json"
+                "path": "./resources/abl.json"
             }
         ],
         "commands": [
@@ -74,11 +76,6 @@
                 "command": "abl.run.currentFile",
                 "title": "ABL: Run",
                 "description": "Run the current .p file"
-            },
-            {
-                "command": "abl.checkSyntax",
-                "title": "ABL: CheckSyntax",
-                "description": "Check the syntax for the current .p file"
             },
             {
                 "command": "abl.test",
@@ -96,11 +93,6 @@
                 "description": "Read the DataDictionary structure for further use"
             },
             {
-                "command": "abl.propath",
-                "title": "ABL: Current PROPATH",
-                "description": "See the currently set PROPATH."
-            },
-            {
                 "command": "abl.dataDictionary",
                 "title": "ABL: Open DataDictionary",
                 "description": "Open the DataDictionary external tool"
@@ -115,7 +107,7 @@
             {
                 "type": "abl",
                 "label": "ABL",
-                "program": "./out/src/debugAdapter/ablDebug.js",
+                "program": "./dist/ablDebug.js",
                 "runtime": "node",
                 "languages": [
                     "abl"
@@ -226,26 +218,6 @@
             "type": "object",
             "title": "ABL configuration",
             "properties": {
-                "abl.checkSyntaxOnSave": {
-                    "type": "string",
-                    "enum": [
-                        "file",
-                        "workspace",
-                        "off"
-                    ],
-                    "default": "file",
-                    "description": "On save, check the syntax fot eh current file, the workspace, or nothing at all."
-                },
-                "abl.editorContextMenuCommands": {
-                    "type": "object",
-                    "properties": {
-                        "checkSyntax": {
-                            "type": "boolean",
-                            "default": true,
-                            "description": "If true, adds command to check syntax to the editor context menu"
-                        }
-                    }
-                },
                 "abl.useProcedureEditorKeyBindings": {
                     "type": "boolean",
                     "default": true,
@@ -260,24 +232,59 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Check if Progress binaries are accessible"
+                },
+                "abl.langServerDebug": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable language server debug logging"
+                },
+                "abl.configuration.runtimes": {
+                    "type": "array",
+                    "description": "Map OpenEdge Execution Environments to local installation",
+                    "items": {
+                        "type": "object",
+                        "default": {},
+                        "required": [
+                            "path",
+                            "name"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "enum": [
+                                    "9.1E",
+                                    "10.2B",
+                                    "11.5",
+                                    "11.6",
+                                    "11.7",
+                                    "12.2",
+                                    "12.4",
+                                    "12.5",
+                                    "ESAP"
+                                ],
+                                "description": "OpenEdge Execution Environment name. Must be unique."
+                            },
+                            "path": {
+                                "type": "string",
+                                "pattern": ".*(?<!\\/bin|\\/bin\\/|\\\\bin|\\\\bin\\\\)$",
+                                "description": "OpenEdge home directory.\n On Windows, backslashes must be escaped, i.e.\n\"path\":\"C:\\\\Progress\\\\OpenEdge-12.2\"."
+                            },
+                            "default": {
+                                "type": "boolean",
+                                "description": "Is default runtime? Only one runtime can be default."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "default": [],
+                    "scope": "machine"
                 }
             }
         },
         "menus": {
-            "editor/context": [
-                {
-                    "when": "editorTextFocus && config.abl.editorContextMenuCommands.checkSyntax && resourceLangId == abl",
-                    "command": "abl.checkSyntax",
-                    "group": "ABL group 1"
-                }
-            ],
             "commandPalette": [
                 {
                     "command": "abl.run.currentFile",
-                    "when": "editorLangId == 'abl'"
-                },
-                {
-                    "command": "abl.checkSyntax",
                     "when": "editorLangId == 'abl'"
                 },
                 {
@@ -292,16 +299,11 @@
         },
         "jsonValidation": [
             {
-                "fileMatch": ".openedge.json",
-                "url": "./schemas/openedge.schema.json"
+                "fileMatch": "openedge-project.json",
+                "url": "./resources/openedge.schema.json"
             }
         ],
         "keybindings": [
-            {
-                "when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",
-                "command": "abl.checkSyntax",
-                "key": "Shift+F2"
-            },
             {
                 "when": "editorTextFocus && config.abl.useProcedureEditorKeyBindings && resourceLangId == abl",
                 "command": "abl.run.currentFile",
@@ -331,6 +333,9 @@
         "eslint": "^8.7.0",
         "mocha": "^9.1.3",
         "typescript": "^3.7.5",
-        "vscode-test": "^1.3.0"
+        "vscode-test": "^1.3.0",
+        "ts-loader": "^7.0.5",
+        "webpack": "^4.43.0",
+        "webpack-cli": "^3.3.11"
     }
 }

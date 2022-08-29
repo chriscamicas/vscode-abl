@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "https://riverside-software.fr/openedge-project.json",
+  "definitions": {},
+  "id": "openedge.json",
+  "properties": {
+    "version": {
+      "id": "/properties/oeversion",
+      "description": "OpenEdge version for this project",
+      "enum": [
+        "9.1E",
+        "10.2B",
+        "11.5",
+        "11.6",
+        "11.7",
+        "12.2",
+        "12.4",
+        "ESAP"
+      ],
+      "type": "string"
+    },
+    "graphicalMode": {
+      "id": "/properties/graphicalMode",
+      "description": "Use prowin or _progres to start OpenEdge sessions",
+      "default": false,
+      "type": "boolean"
+    },
+    "extraParameters": {
+      "id": "/properties/parameterFiles",
+      "description": "Extra parameters passed to Progress executable",
+      "type": "string"
+    },
+    "buildDirectory": {
+      "id": "/properties/buildDirectory",
+      "description": "Default build directory (if not specified in source directory)",
+      "type": "string"
+    },
+    "buildPath": {
+      "id": "/properties/buildPath",
+      "description": "Source and PROPATH entries",
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "dumpFiles": {
+      "id": "/properties/dumpFiles",
+      "description": "Comma-separated list of DF files",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "dbConnections": {
+      "id": "/properties/dbConnections",
+      "description": "Database connection strings (one DB per entry)",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "aliases": {
+      "id": "/properties/aliases",
+      "description": "Semi-colon separated list of aliases",
+      "type": "string"
+    },
+    "numThreads": {
+      "id": "/properties/threads",
+      "description": "Number of background worker threads",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 32
+    }
+  },
+  "type": "object"
+}

@@ -3,11 +3,10 @@ import { Socket } from 'net';
 import * as path from 'path';
 import { LoggingDebugSession, Logger, logger, Handles, InitializedEvent, OutputEvent, Scope, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol'
-import { createProArgs, getProBin, setupEnvironmentVariables } from '../shared/ablPath';
-import { loadConfigFile, OPENEDGE_CONFIG_FILENAME } from '../shared/openEdgeConfigFile';
+import { createProArgs, setupEnvironmentVariables } from '../shared/ablPath';
 import { convertDataToDebuggerMessage, DebugMessage, DebugMessageArray, DebugMessageClassInfo, DebugMessageListing, DebugMessageVariables } from './messages';
 import { AblDebugKind, DebugVariable } from './variables';
-
+import { getProject } from '../extension';
 import * as minimatch from 'minimatch';
 
 const DEFAULT_DEBUG_PORT = 3099;
@@ -335,23 +334,25 @@ class AblDebugSession extends LoggingDebugSession {
 
         const filename = args.program;
         const cwd = args.cwd || path.dirname(filename);
+
         this.localRoot = normalizePath(cwd);
         args.port = args.port || DEFAULT_DEBUG_PORT;
 
-        const configFileName = path.join(cwd, OPENEDGE_CONFIG_FILENAME);
-        loadConfigFile(configFileName).then((oeConfig) => {
-            const cmd = getProBin(oeConfig.dlc);
-            const env = setupEnvironmentVariables(process.env, oeConfig, cwd);
+        const oeConfig = getProject(filename);
+        // const configFileName = path.join(cwd, OPENEDGE_CONFIG_FILENAME);
+        // loadConfigFile(configFileName).then((oeConfig) => {
+            const cmd = oeConfig.getExecutable(false)
+            const env = setupEnvironmentVariables(process.env, oeConfig);
             env.VSABL_STARTUP_PROGRAM = filename;
             const proArgs = createProArgs({
                 batchMode: true,
                 debugPort: args.port,
                 param: args.args ? args.args.join(' ') : '',
                 parameterFiles: oeConfig.parameterFiles,
-                startupProcedure: path.join(__dirname, '../../../abl-src/run-debug.p'),
+                startupProcedure: path.join(__dirname, '../abl-src/run-debug.p'),
             });
 
-            // prepareProArguments(path.join(__dirname, '../../abl-src/run-debug.p'), filename, true, true).then(proArgs => {
+            // prepareProArguments(path.join(__dirname, '../abl-src/run-debug.p'), filename, true, true).then(proArgs => {
             const spawnOptions = { env, cwd };
             // spawnOptions.stdio = 'pipe';
             const spawnedProcess = spawn(cmd, proArgs, spawnOptions);
@@ -393,12 +394,12 @@ class AblDebugSession extends LoggingDebugSession {
             }, (err) => {
                 this.sendErrorResponse(response, 3000, 'Failed to continue: "{e}"', { e: err.toString() });
             });
-        }, (err) => {
+        /* }, (err) => {
             this.sendErrorResponse(response, 3000, 'Failed to load config file {f}: "{e}"', {
                 e: err.toString(),
                 f: configFileName,
             });
-        });
+        }); */
     }
 
     protected attachRequest(response: DebugProtocol.AttachResponse, args: AttachRequestArguments): void {

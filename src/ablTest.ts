@@ -1,10 +1,10 @@
 import { mkdtemp, readFile } from 'fs';
 import { tmpdir } from 'os';
 import * as vscode from 'vscode';
-import { getOpenEdgeConfig } from './ablConfig';
 import { create } from './OutputChannelProcess';
-import { createProArgs, getProBin, setupEnvironmentVariables } from './shared/ablPath';
-import { OpenEdgeConfig } from './shared/openEdgeConfigFile';
+import { createProArgs, setupEnvironmentVariables } from './shared/ablPath';
+import { OpenEdgeProjectConfig } from './shared/openEdgeConfigFile';
+import { getProject } from './extension';
 
 import * as glob from 'glob';
 import * as path from 'path';
@@ -21,24 +21,19 @@ const outputChannel = vscode.window.createOutputChannel('ABL Tests');
 const failedStatusChar = '✘';
 const successStatusChar = '✔';
 
-const promiseSerial = (funcs) =>
-    funcs.reduce((promise, func) =>
-        promise.then((result) => func().then(Array.prototype.concat.bind(result))),
-        Promise.resolve([]));
-
 export function ablTest(filename: string, ablConfig: vscode.WorkspaceConfiguration): Thenable<any> {
 
     // let cwd = path.dirname(filename);
     const cwd = vscode.workspace.rootPath;
+    const oeConfig = getProject(filename);
 
-    return getOpenEdgeConfig().then((oeConfig) => {
-        const cmd = getProBin(oeConfig.dlc);
+        const cmd = oeConfig.getExecutable(false)
         outputChannel.clear();
         outputChannel.show(true);
 
         outputChannel.appendLine(`Starting UnitTests`);
 
-        const env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
+        const env = setupEnvironmentVariables(process.env, oeConfig);
         if (filename) {
             runTestFile(filename, cmd, env, cwd, oeConfig).then((summary) => {
                 outputChannel.appendLine(`Executed ${summary.tests} tests, Errors ${summary.errors}, Failures ${summary.failures}`);
@@ -60,12 +55,12 @@ export function ablTest(filename: string, ablConfig: vscode.WorkspaceConfigurati
                 });
                 outputChannel.appendLine(`Executed ${summary.tests} tests, Errors ${summary.errors}, Failures ${summary.failures}`);
             });
+            return null;
         }
         // outputChannel.appendLine(`Finished UnitTests`);
-    });
 }
 
-async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeConfig) {
+async function runTestFile(fileName, cmd, env, cwd, oeConfig: OpenEdgeProjectConfig) {
     const outDir = await mkdtempAsync(path.join(tmpdir(), 'ablunit-'));
 
     const xmlParser = new xml2js.Parser();

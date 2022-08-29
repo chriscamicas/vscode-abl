@@ -1,0 +1,78 @@
+{
+    "Http Request": {
+        "prefix": "httprequest",
+        "description": "ABL HttpRequest",
+        "body": [
+            "using OpenEdge.Net.HTTP.RequestBuilder.",
+            "using OpenEdge.Net.HTTP.IHttpRequest.",
+            "using OpenEdge.Net.HTTP.IHttpResponse.",
+            "using OpenEdge.Net.HTTP.ClientBuilder.",
+            "",
+            "def var baseUrl as char no-undo.",
+            "def var apiRoute as char no-undo.",
+            "def var oRequest as IHttpRequest no-undo.",
+            "def var oResponse as IHttpResponse no-undo.",
+            "",
+            "baseUrl = \"${1:base-url}\".",
+            "apiRoute = \"/${2:api-route}\".",
+            "oRequest = RequestBuilder:Get(baseUrl + apiRoute):Request.",
+            "",
+            "oResponse = ClientBuilder:Build():Client:Execute(oRequest).",
+            "$0"
+        ]
+    },
+    "JsonObject from IHttpResponse:Entity": {
+        "prefix": "entity-jsonobject",
+        "description": "Create a JsonObject from IHttpResponse:Entity",
+        "body":[
+            "def var ${1:oJson} as JsonObject no-undo.",
+            "$1 = cast(${2:oResponse}:Entity, JsonObject).",
+            "$0"
+        ]
+    },
+    "JsonArray from IHttpResponse:Entity": {
+        "prefix": "entity-jsonarray",
+        "description": "Create a JsonArray from IHttpResponse:Entity",
+        "body":[
+            "def var ${1:oJson} as JsonArray no-undo.",
+            "$1 = cast(${2:oResponse}:Entity, JsonArray).",
+            "$0"
+        ]
+    },
+    "DEF VAR NO-UNDO": {
+        "prefix": "var",
+        "description": "Define a variable no-undo",
+        "body":[
+            "def var ${1:varName} as ${2:char} no-undo.",
+            "$0"
+        ]
+    },
+    "DEF TEMP-TABLE NO-UNDO": {
+        "prefix": "tt",
+        "description": "Define a temp-table no-undo",
+        "body": [
+            "def temp-table ${1:ttName} no-undo",
+            "\tfield ${2:fieldName} as ${3:char}.",
+            "$0"
+        ]
+    },
+    "PROCEDURE": {
+        "prefix": "pro",
+        "description": "Define a procedure",
+        "body": [
+            "procedure ${1:procName}:",
+            "\t$0",
+            "end procedure."
+        ]
+    },
+    "FUNCTION": {
+        "prefix": "func",
+        "description": "Define a function",
+        "body": [
+            "function ${1:functionName} returns ${2:char} (input ${3:parameterName} as ${4:char}):",
+            "\t$0",
+            "\treturn.",
+            "end function."
+        ]
+    }
+}

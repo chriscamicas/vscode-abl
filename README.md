@@ -1,5 +1,5 @@
-# OpenEdge ABL language support for Visual Studio Code
-This extension provides rich OpenEdge ABL language support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
+# OpenEdge ABL support for Visual Studio Code (Language Server version)
+This extension provides rich OpenEdge ABL support for Visual Studio Code. Now you can write and run ABL procedures using the excellent IDE-like interface that Visual Studio Code provides.
 
 ## Features
 
@@ -9,13 +9,21 @@ This extension provides rich OpenEdge ABL language support for Visual Studio Cod
 * Debugger
 * Auto-complete (tables, fields, methods)
 
-![features demo](./docs/images/demo.gif "Demo")
+![features demo](./resources/images/demo.gif "Demo")
 
-![debugger demo](./docs/images/debug.gif "Debugger")
+![debugger demo](./resources/images/debug.gif "Debugger")
 
 ## Using
+
+### Migration steps
+
+Since version XXX, the `dlc` attribute is not used anymore in `.openedge.json`. OpenEdge runtimes have to be declared in the global VSCode configuration,
+and the `OpenEdgeVersion` attribute has to reference one of those version numbers in `.openedge.json`.
 ### Prerequisites
-You need to have a local OpenEdge installation, and the `DLC` environment variable should point to the installation directory (usually `C:\Progress\OpenEdge`).
+
+OpenEdge runtimes have to be declared in VSCode configuration file. Open settings -> Extensions -> ABL Configuration -> Runtimes, or modify `settings.json`:
+![Settings](resources/images/settings.png)
+
 ### Config file
 You can create a local config file for your project named `.openedge.json`, with the following structure:
 ```JSON
@@ -25,7 +33,8 @@ You can create a local config file for your project named `.openedge.json`, with
         "c:\\temp",
         "${workspaceFolder}"
     ],
-    "dlc": "C:/Progress/OpenEdge", //optional override
+    "dlc": "C:\\Progress\\OpenEdge", // *** Deprecated *** Use OpenEdgeVersion
+    "OpenEdgeVersion": "12.2", // Reference to version number in global config
     "proPathMode": "append", // overwrite, prepend
     "parameterFiles": [ // -pf
         "default.pf"
@@ -40,8 +49,7 @@ You can create a local config file for your project named `.openedge.json`, with
 }
 ```
 
-`dlc`, `startupProcedure`, `proPath` and `workingDirectory` are optional. Default values:
-- `dlc`: uses environment variable $DLC
+`startupProcedure`, `proPath` and `workingDirectory` are optional. Default values:
 - `startupProcedure`: ''
 - `proPath`: workspaceRoot (of VSCode)
 - `workingDirectory`: folder of active source code

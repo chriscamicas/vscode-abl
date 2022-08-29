@@ -1,11 +1,8 @@
-import { readFile } from 'fs';
-import * as jsonminify from 'jsonminify';
-import * as promisify from 'util.promisify';
+import { readFileSync } from 'fs';
+import * as jsonminify from 'jsonminify'; // Remove comments from JSON file
+import * as path from 'path';
+import * as fs from 'fs';
 import { OpenEdgeFormatOptions } from '../misc/OpenEdgeFormatOptions';
-
-const readFileAsync = promisify(readFile);
-
-export const OPENEDGE_CONFIG_FILENAME = '.openedge.json';
 
 export interface TestConfig {
     files?: string[];
@@ -21,31 +18,63 @@ export interface Command {
     env?: string[];
     cwd?: string;
 }
+
 export interface OpenEdgeConfig {
-    dlc?: string;
-    proPath?: string[];
-    proPathMode?: 'append' | 'overwrite' | 'prepend';
-    parameterFiles?: string[];
-    workingDirectory?: string;
-    test?: TestConfig;
-    startupProcedure?: string;
-    dbDictionary?: string[];
+    // JSON mapping of openedge-project.json
+    version?: string;
+    graphicalMode?: boolean;
+    extraParameters?: string;
+    buildPath?: BuildPathEntry[];
+    buildDirectory?: string;
+    dumpFiles?: string[];
+    dbConnections?: string[];
+    aliases?: string;
+    numThreads: number;
     format?: OpenEdgeFormatOptions;
 }
 
-export function loadConfigFile(filename: string): Thenable<OpenEdgeConfig> {
-    if (!filename) {
-        return Promise.resolve({});
+export interface BuildPathEntry {
+  type: string;
+  path: string;
+}
+
+export class OpenEdgeProjectConfig {
+  // Real project config, created from OpenEdgeConfig
+  rootDir: string;
+  version: string;
+  gui: boolean;
+  dlc: string;
+  propath: string[]
+  propathMode: 'append' | 'overwrite' | 'prepend';
+  startupProc: string
+  parameterFiles: string[]
+  dbDictionary?: string[];
+  test?: TestConfig;
+  format?: OpenEdgeFormatOptions;
+
+  getExecutable(gui?: boolean): string {
+    if (gui || this.gui) {
+      if (fs.existsSync(path.join(this.dlc, 'bin', 'prowin.exe')))
+        return path.join(this.dlc, 'bin', 'prowin.exe');
+      else
+        return path.join(this.dlc, 'bin', 'prowin32.exe')
+    } else {
+      if (fs.existsSync(path.join(this.dlc, 'bin', '_progres.exe')))
+        return path.join(this.dlc, 'bin', '_progres.exe');
+      else
+        return path.join(this.dlc, 'bin', '_progres')
     }
-    return readFileAsync(filename, { encoding: 'utf8' }).then((text) => {
-        // We don't catch the parsing error, to send the error in the UI (via promise rejection)
+  }
+}
+
+export async function loadConfigFile(filename: string): Promise<OpenEdgeConfig> {
+    if (!filename) {
+        return Promise.reject();
+    }
+    try {
+        const text = readFileSync(filename, { encoding: 'utf8' });
         return JSON.parse(jsonminify(text));
-    }).catch((e) => {
-        // if no .openedge.json file is found, return a default empty one, no error
-        if (e.code === 'ENOENT') {
-            return {};
-        }
-        // other error (like parsing error) should be thrown
-        throw e;
-    });
+    } catch (caught) {
+        return Promise.reject();
+    }
 }

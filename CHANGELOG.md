@@ -1,3 +1,7 @@
+1.3
+=====
+- Added syntax highlight with classes support
+
 1.1
 =====
 - Code completion and Outline pane
